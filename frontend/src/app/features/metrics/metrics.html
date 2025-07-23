@@ -1,0 +1,81 @@
+<div class="metrics-container">
+  <h1 class="metrics-title">Parcel Metrics & Insights</h1>
+  <p class="metrics-subtitle">A visual overview of your parcel activity, status, and trends</p>
+
+  <!-- Stats Cards -->
+  <div class="metrics-stats-cards">
+    <div class="metrics-card sent">
+      <div class="icon"><i class="fa-solid fa-paper-plane"></i></div>
+      <div class="value">1,234</div>
+      <div class="label">Total Sent Parcels</div>
+      <div class="desc">Since account creation</div>
+    </div>
+    <div class="metrics-card received">
+      <div class="icon"><i class="fa-solid fa-inbox"></i></div>
+      <div class="value">987</div>
+      <div class="label">Total Received Parcels</div>
+      <div class="desc">Past 90 days</div>
+    </div>
+    <div class="metrics-card in-transit">
+      <div class="icon"><i class="fa-solid fa-truck-fast"></i></div>
+      <div class="value">45</div>
+      <div class="label">Parcels In Transit</div>
+      <div class="desc">Currently on the way</div>
+    </div>
+    <div class="metrics-card pending">
+      <div class="icon"><i class="fa-solid fa-clock"></i></div>
+      <div class="value">8</div>
+      <div class="label">Pending Deliveries</div>
+      <div class="desc">Awaiting pickup or processing</div>
+    </div>
+  </div>
+
+  <!-- Main Content: Activity & Chart -->
+  <div class="metrics-main-content">
+    <div class="metrics-activity">
+      <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h2>
+      <ul class="activity-list">
+        <li><span class="status delivered"><i class="fa-solid fa-circle-check"></i></span> Delivered: Parcel #P56789 to New York, successfully delivered. <span class="time">15 minutes ago</span></li>
+        <li><span class="status in-transit"><i class="fa-solid fa-truck-fast"></i></span> In Transit: Parcel #P56710 en route to Los Angeles, currently in Chicago. <span class="time">1 hour ago</span></li>
+        <li><span class="status ready"><i class="fa-solid fa-box"></i></span> Ready for Pickup: Parcel #P56711 at local depot for pickup. <span class="time">3 hours ago</span></li>
+        <li><span class="status processing"><i class="fa-solid fa-spinner"></i></span> Processing: Parcel #P56712 received at sorting facility. <span class="time">5 hours ago</span></li>
+        <li><span class="status failed"><i class="fa-solid fa-circle-xmark"></i></span> Delivery Attempted: Parcel #P56713 delivery attempted, recipient not available. <span class="time">2 days ago</span></li>
+        <li><span class="status delivered"><i class="fa-solid fa-circle-check"></i></span> Delivered: Parcel #P56714 to Houston successfully delivered. <span class="time">3 days ago</span></li>
+      </ul>
+    </div>
+    <div class="metrics-chart">
+      <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> Parcel Status Distribution</h2>
+      <!-- Placeholder for donut chart -->
+      <div class="donut-chart">
+        <svg viewBox="0 0 120 120" width="180" height="180">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#f3f4f6" stroke-width="20" />
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#f97316" stroke-width="20" stroke-dasharray="80 220" stroke-linecap="round" transform="rotate(-90 60 60)" />
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#22c55e" stroke-width="20" stroke-dasharray="60 240" stroke-linecap="round" transform="rotate(-18 60 60)" />
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#3b82f6" stroke-width="20" stroke-dasharray="40 260" stroke-linecap="round" transform="rotate(30 60 60)" />
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#f59e42" stroke-width="20" stroke-dasharray="20 280" stroke-linecap="round" transform="rotate(60 60 60)" />
+        </svg>
+        <div class="donut-center">
+          <span class="donut-value">1,234</span>
+          <span class="donut-label">Total</span>
+        </div>
+      </div>
+      <div class="donut-legend">
+        <div><span class="legend-dot delivered"></span> Delivered</div>
+        <div><span class="legend-dot in-transit"></span> In Transit</div>
+        <div><span class="legend-dot pending"></span> Pending</div>
+        <div><span class="legend-dot failed"></span> Failed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="metrics-quick-actions">
+    <h2 class="section-title"><i class="fa-solid fa-bolt"></i> Quick Actions</h2>
+    <div class="quick-actions-list">
+      <a routerLink="/parcels/create" class="quick-action"><i class="fa-solid fa-plus"></i> Create New Parcel</a>
+      <a routerLink="/parcels/track" class="quick-action"><i class="fa-solid fa-location-dot"></i> Track Existing Parcel</a>
+      <a routerLink="/dashboard/faq" class="quick-action"><i class="fa-solid fa-headset"></i> Contact Support</a>
+      <a routerLink="/dashboard/reports" class="quick-action"><i class="fa-solid fa-file-lines"></i> View Reports</a>
+    </div>
+  </div>
+</div> 

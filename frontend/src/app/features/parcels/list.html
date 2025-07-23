@@ -1,0 +1,160 @@
+<!-- Modern Summary Cards -->
+<div class="summary-cards-modern">
+  <div class="card-modern">
+    <div class="icon-bg"><i class="fa-solid fa-box"></i></div>
+    <div>
+      <div class="card-title">Total Parcels</div>
+      <div class="card-value">12</div>
+      <div class="card-desc">All your active shipments</div>
+    </div>
+  </div>
+  <div class="card-modern">
+    <div class="icon-bg in-transit"><i class="fa-solid fa-truck-fast"></i></div>
+    <div>
+      <div class="card-title">In Transit</div>
+      <div class="card-value">3</div>
+      <div class="card-desc">Currently on the way</div>
+    </div>
+  </div>
+  <div class="card-modern">
+    <div class="icon-bg delivered"><i class="fa-solid fa-circle-check"></i></div>
+    <div>
+      <div class="card-title">Delivered</div>
+      <div class="card-value">4</div>
+      <div class="card-desc">Successfully completed</div>
+    </div>
+  </div>
+  <div class="card-modern">
+    <div class="icon-bg pending"><i class="fa-solid fa-clock"></i></div>
+    <div>
+      <div class="card-title">Pending Pickup</div>
+      <div class="card-value">2</div>
+      <div class="card-desc">Awaiting collection</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs and Filter -->
+<div class="tabs-filter-row-modern">
+  <div class="tabs-modern">
+    <button class="tab-modern active"><i class="fa-solid fa-paper-plane"></i> Parcels I Sent</button>
+    <button class="tab-modern"><i class="fa-solid fa-inbox"></i> Parcels To Me</button>
+  </div>
+  <div class="filter-modern">
+    <label for="status-filter"><i class="fa-solid fa-filter"></i> Filter by Status:</label>
+    <select id="status-filter">
+      <option>All</option>
+      <option>Delivered</option>
+      <option>In Transit</option>
+      <option>Pending</option>
+      <option>Cancelled</option>
+      <option>New Order</option>
+    </select>
+  </div>
+</div>
+
+<!-- Modern Parcels Table -->
+<div class="table-container-modern">
+  <table class="parcels-table-modern">
+    <thead>
+      <tr>
+        <th>Parcel ID</th>
+        <th>Receiver Name</th>
+        <th>Status</th>
+        <th>Delivery Date</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Weight</th>
+        <th>Cost</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>PRC-001-A2B</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Alice Johnson</td>
+        <td><span class="badge delivered"><i class="fa-solid fa-circle-check"></i> Delivered</span></td>
+        <td>2023-11-20</td>
+        <td>London, UK</td>
+        <td>Paris, FR</td>
+        <td>2.5 kg</td>
+        <td>$25.00</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-001-A2B']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-002-C3D</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Bob Smith</td>
+        <td><span class="badge in-transit"><i class="fa-solid fa-truck-fast"></i> In Transit</span></td>
+        <td>2023-11-28</td>
+        <td>Berlin, DE</td>
+        <td>Rome, IT</td>
+        <td>5.0 kg</td>
+        <td>$40.00</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-002-C3D']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-003-E4F</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Charlie Brown</td>
+        <td><span class="badge pending"><i class="fa-solid fa-clock"></i> Pending</span></td>
+        <td>2023-12-05</td>
+        <td>Madrid, ES</td>
+        <td>Lisbon, PT</td>
+        <td>1.2 kg</td>
+        <td>$15.50</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-003-E4F']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-004-G5H</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Diana Prince</td>
+        <td><span class="badge cancelled"><i class="fa-solid fa-xmark"></i> Cancelled</span></td>
+        <td>2023-11-15</td>
+        <td>New York, US</td>
+        <td>Toronto, CA</td>
+        <td>10.0 kg</td>
+        <td>$75.00</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-004-G5H']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-005-I6J</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Ethan Hunt</td>
+        <td><span class="badge new-order"><i class="fa-solid fa-plus"></i> New Order</span></td>
+        <td>2023-12-10</td>
+        <td>Tokyo, JP</td>
+        <td>Seoul, KR</td>
+        <td>0.8 kg</td>
+        <td>$18.75</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-005-I6J']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-006-K7L</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> Fiona Gallagher</td>
+        <td><span class="badge delivered"><i class="fa-solid fa-circle-check"></i> Delivered</span></td>
+        <td>2023-11-22</td>
+        <td>Sydney, AU</td>
+        <td>Auckland, NZ</td>
+        <td>3.1 kg</td>
+        <td>$30.00</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-006-K7L']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+      <tr>
+        <td>PRC-007-M8N</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> George Costanza</td>
+        <td><span class="badge in-transit"><i class="fa-solid fa-truck-fast"></i> In Transit</span></td>
+        <td>2023-11-29</td>
+        <td>Vancouver, CA</td>
+        <td>Seattle, US</td>
+        <td>6.5 kg</td>
+        <td>$55.00</td>
+        <td><a [routerLink]="['/dashboard/parcels', 'PRC-007-M8N']" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modern Pagination -->
+<div class="pagination-modern">
+  <button class="page-btn-modern">&lt; Previous</button>
+  <button class="page-btn-modern active">1</button>
+  <button class="page-btn-modern">2</button>
+  <button class="page-btn-modern">Next &gt;</button>
+</div>

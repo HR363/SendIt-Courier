@@ -1,0 +1,35 @@
+<div class="parcel-details-container">
+  <div class="details-header">
+    <div class="details-header-icon"><i class="fa-solid fa-box"></i></div>
+    <div>
+      <h1 class="details-title">Parcel Details</h1>
+      <p class="details-subtitle">Tracking ID: <span class="details-id">{{ parcel.id }}</span></p>
+    </div>
+  </div>
+  <div class="details-section">
+    <h2 class="section-title">Sender & Receiver</h2>
+    <div class="details-grid">
+      <div><span class="label">Sender:</span> {{ parcel.sender }}</div>
+      <div><span class="label">Receiver:</span> {{ parcel.receiver }}</div>
+      <div><span class="label">Zone:</span> {{ parcel.zone }}</div>
+      <div><span class="label">Status:</span> <span class="status-badge" [ngClass]="getStatusClass(parcel.status)">{{ parcel.status }}</span></div>
+    </div>
+  </div>
+  <div class="details-section">
+    <h2 class="section-title">Addresses</h2>
+    <div class="details-grid">
+      <div><span class="label">Pickup Address:</span> {{ parcel.pickupAddress }}</div>
+      <div><span class="label">Destination Address:</span> {{ parcel.destinationAddress }}</div>
+    </div>
+  </div>
+  <div class="details-section">
+    <h2 class="section-title">Parcel Info</h2>
+    <div class="details-grid">
+      <div><span class="label">Weight:</span> {{ parcel.weight }} kg</div>
+      <div><span class="label">Description:</span> {{ parcel.description }}</div>
+      <div><span class="label">Service Type:</span> {{ parcel.serviceType }}</div>
+      <div><span class="label">Last Update:</span> {{ parcel.lastUpdate }}</div>
+      <div><span class="label">Estimated Cost:</span> ${{ parcel.cost }}</div>
+    </div>
+  </div>
+</div>

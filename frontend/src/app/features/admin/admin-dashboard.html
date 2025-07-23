@@ -1,0 +1,157 @@
+<header class="admin-topbar">
+  <input class="search-bar" type="text" placeholder="Search parcels, users, or reports..." />
+  <div class="topbar-actions">
+    <button class="notif-btn"><i class="fa-regular fa-bell"></i></button>
+    <div class="admin-avatar">A</div>
+  </div>
+</header>
+
+<!-- Dashboard Content -->
+<div class="dashboard-content">
+  <h1 class="dashboard-title">Dashboard Overview</h1>
+
+  <!-- Filter Bar -->
+  <div class="dashboard-filter-bar">
+    <select class="dashboard-filter-select">
+      <option>Last 30 Days</option>
+      <option>Last 7 Days</option>
+      <option>This Month</option>
+      <option>Last Month</option>
+    </select>
+    <button class="dashboard-filter-btn apply"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+    <button class="dashboard-filter-btn export"><i class="fa-solid fa-download"></i> Export Report</button>
+  </div>
+
+  <!-- Modern Stats Cards -->
+  <div class="modern-stats-cards">
+    <div class="modern-stats-card">
+      <div class="stats-card-icon"><i class="fa-solid fa-box"></i></div>
+      <div class="stats-card-label">Total Parcels</div>
+      <div class="stats-card-value">3,892</div>
+      <div class="stats-card-desc">All-time packages handled</div>
+    </div>
+    <div class="modern-stats-card">
+      <div class="stats-card-icon orange"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div class="stats-card-label">Revenue</div>
+      <div class="stats-card-value">$128,400</div>
+      <div class="stats-card-desc">Total revenue this year</div>
+    </div>
+    <div class="modern-stats-card">
+      <div class="stats-card-icon blue"><i class="fa-solid fa-clock"></i></div>
+      <div class="stats-card-label">On-Time Rate</div>
+      <div class="stats-card-value">96.2%</div>
+      <div class="stats-card-desc">Deliveries made on time</div>
+    </div>
+    <div class="modern-stats-card">
+      <div class="stats-card-icon green"><i class="fa-solid fa-stopwatch"></i></div>
+      <div class="stats-card-label">Avg. Delivery Time</div>
+      <div class="stats-card-value">1.8 days</div>
+      <div class="stats-card-desc">Average time per delivery</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-card">
+    <div class="chart-title">Daily Parcel Volume</div>
+    <apx-chart
+      [series]="chartOptions.series"
+      [chart]="chartOptions.chart"
+      [xaxis]="chartOptions.xaxis"
+      [stroke]="chartOptions.stroke"
+      [dataLabels]="chartOptions.dataLabels"
+      [grid]="chartOptions.grid"
+      [title]="chartOptions.title"
+      [markers]="chartOptions.markers"
+      [yaxis]="chartOptions.yaxis"
+      [tooltip]="chartOptions.tooltip"
+      [fill]="chartOptions.fill"
+      [legend]="chartOptions.legend">
+    </apx-chart>
+  </div>
+
+  <!-- Recent Parcel Activity Table -->
+  <div class="table-card">
+    <div class="table-title">Recent Parcel Activity</div>
+    <table class="activity-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tracking Number</th>
+          <th>Sender</th>
+          <th>Recipient</th>
+          <th>Status</th>
+          <th>Delivery Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><a class="tracking-link">TRK123456789</a></td>
+          <td>Alice Smith</td>
+          <td>Bob Johnson</td>
+          <td><span class="badge in-transit">In Transit</span></td>
+          <td>2024-07-30</td>
+          <td>...</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><a class="tracking-link">TRK456567890</a></td>
+          <td>Charlie Brown</td>
+          <td>Elvira Prince</td>
+          <td><span class="badge pending">Pending</span></td>
+          <td>2024-07-30</td>
+          <td>...</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><a class="tracking-link">TRK246813579</a></td>
+          <td>Eva Adams</td>
+          <td>Frank White</td>
+          <td><span class="badge delivered">Delivered</span></td>
+          <td>2024-07-28</td>
+          <td>...</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><a class="tracking-link">TRK123123456</a></td>
+          <td>Grace Hopper</td>
+          <td>Heidi Lamarr</td>
+          <td><span class="badge in-transit">In Transit</span></td>
+          <td>2024-07-28</td>
+          <td>...</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><a class="tracking-link">TRK556677889</a></td>
+          <td>Ivan Patlov</td>
+          <td>Judy Garland</td>
+          <td><span class="badge cancelled">Cancelled</span></td>
+          <td>2024-07-28</td>
+          <td>...</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-pagination">&lt; Previous 1 2 3 Next &gt;</div>
+  </div>
+
+  <!-- Recent System Activities -->
+  <div class="system-activity-card">
+    <div class="system-title">Recent System Activities</div>
+    <ul class="system-activity-list">
+      <li>User John Doe created new delivery order TRK123456789 <span class="activity-time">2 hours ago</span></li>
+      <li>Parcel TRK987654321 status updated to In Transit <span class="activity-time">3 hours ago</span></li>
+      <li>Admin Sarah Connor updated user profile for Jane Smith <span class="activity-time">4 hours ago</span></li>
+      <li>Rupali “Daily Deliveries” granted successfully <span class="activity-time">1 day ago</span></li>
+      <li>New user registered: Michael Jordan <span class="activity-time">2 days ago</span></li>
+    </ul>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions-admin">
+    <button class="quick-btn"><i class="fa-solid fa-location-crosshairs"></i> Track Parcel</button>
+    <button class="quick-btn"><i class="fa-solid fa-users"></i> Manage Customers</button>
+    <button class="quick-btn"><i class="fa-solid fa-plus"></i> Quick Create Delivery</button>
+    <button class="quick-btn"><i class="fa-solid fa-sort"></i> Sort Deliveries</button>
+  </div>
+</div> 
