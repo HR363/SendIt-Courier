@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { UserService, UserProfile } from './user.service';
+import { Observable } from 'rxjs';
+import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
 
 interface PaymentMethod {
   id: string;
@@ -19,127 +21,109 @@ interface Shipment {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass],
+  imports: [NgIf, NgFor, NgClass, AsyncPipe],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
+
 export class ProfileComponent {
-  user = signal({
-    name: 'Jessica Williams',
-    email: 'jessica.williams@example.com',
-    phone: '+1 (555) 123-4567',
-    photo: '',
-    profileComplete: 75
-  });
+  user$!: Observable<UserProfile | null>;
+  editMode = false;
+  private _editForm: Partial<UserProfile> = {};
+  private _photoPreview: string | null = null;
 
-  // Edit profile state
-  editMode = signal(false);
-  editForm = signal({
-    name: '',
-    email: '',
-    phone: ''
-  });
-  photoPreview = signal<string | null>(null);
+  // Payment, shipments, and notifications will be loaded from backend in future
+  _paymentEditMode = false;
+  _newPaymentForm = { type: 'Visa', number: '', expires: '', cvv: '' };
+  _paymentMethods: any[] = [];
+  _shipments: any[] = [];
+  _notifications = { sms: false, email: false };
+  showAllShipmentsFlag = false;
 
-  // Payment methods state
-  paymentEditMode = signal(false);
-  newPaymentForm = signal({
-    type: 'Visa' as 'Visa' | 'Mastercard' | 'Bank',
-    number: '',
-    expires: '',
-    cvv: ''
-  });
+  constructor(private userService: UserService) {
+    this.user$ = this.userService.getProfile();
+  }
 
-  // Shipments state
-  showAllShipments = signal(false);
+  // Template expects methods for these properties
+  editForm() { return this._editForm; }
+  photoPreview() { return this._photoPreview; }
+  paymentEditMode() { return this._paymentEditMode; }
+  newPaymentForm() { return this._newPaymentForm; }
+  paymentMethods() { return this._paymentMethods; }
+  shipments() { return this._shipments; }
+  notifications() { return this._notifications; }
 
-  paymentMethods = signal<PaymentMethod[]>([
-    { id: '1', type: 'Visa', last4: '4242', expires: '12/26' },
-    { id: '2', type: 'Mastercard', last4: '5100', expires: '09/25' },
-    { id: '3', type: 'Bank', last4: '8901', expires: 'N/A' }
-  ]);
-
-  shipments = signal<Shipment[]>([
-    { id: '1', title: 'Delivery: Package to New York City', trackingId: 'TRK96754', status: 'Delivered', date: '2024-07-28' },
-    { id: '2', title: 'Shipment: Parcel from Los Angeles', trackingId: 'TRK23456', status: 'In Transit', date: '2024-07-29' },
-    { id: '3', title: 'Delivery: Documents to Chicago', trackingId: 'TRK56790', status: 'Pending', date: '2024-07-30' },
-    { id: '4', title: 'Shipment: Fragile goods to Dallas', trackingId: 'TRK34567', status: 'In Transit', date: '2024-07-28' },
-    { id: '5', title: 'Delivery: Electronics to Seattle', trackingId: 'TRK29543', status: 'Delivered', date: '2024-07-27' },
-    { id: '6', title: 'Shipment: Clothing to Miami', trackingId: 'TRK78901', status: 'Delivered', date: '2024-07-26' },
-    { id: '7', title: 'Delivery: Books to Portland', trackingId: 'TRK12345', status: 'In Transit', date: '2024-07-31' },
-    { id: '8', title: 'Shipment: Furniture to Denver', trackingId: 'TRK67890', status: 'Pending', date: '2024-08-01' }
-  ]);
-
-  notifications = signal({ sms: true, email: true });
-
-  // Edit profile methods
-  openEditProfile() {
-    const u = this.user();
-    this.editForm.set({ name: u.name, email: u.email, phone: u.phone });
-    this.photoPreview.set(u.photo || null);
-    this.editMode.set(true);
+  openEditProfile(user?: UserProfile) {
+    if (user) {
+      this._editForm = { name: user.name, email: user.email, phone: user.phone };
+      this._photoPreview = user.photo || null;
+    }
+    this.editMode = true;
   }
   closeEditProfile() {
-    this.editMode.set(false);
-    this.photoPreview.set(null);
+    this.editMode = false;
+    this._photoPreview = null;
   }
   saveProfile() {
-    this.user.update(u => ({ ...u, ...this.editForm(), photo: this.photoPreview() || u.photo }));
-    this.editMode.set(false);
-    this.photoPreview.set(null);
+    this.userService.updateProfile({ ...this._editForm, photo: this._photoPreview || undefined }).subscribe(() => {
+      this.editMode = false;
+      this._photoPreview = null;
+      // No need to manually reload user; Observable will update if service emits new value
+    });
   }
   onEditInputChange(field: 'name' | 'email' | 'phone', value: string) {
-    this.editForm.update(f => ({ ...f, [field]: value }));
+    this._editForm = { ...this._editForm, [field]: value };
   }
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = e => {
-        this.photoPreview.set(reader.result as string);
+        this._photoPreview = reader.result as string;
       };
       reader.readAsDataURL(input.files[0]);
     }
   }
 
-  // Payment methods methods
-  openAddPayment() {
-    this.paymentEditMode.set(true);
-    this.newPaymentForm.set({ type: 'Visa', number: '', expires: '', cvv: '' });
-  }
-  closeAddPayment() {
-    this.paymentEditMode.set(false);
-  }
-  onPaymentInputChange(field: 'type' | 'number' | 'expires' | 'cvv', value: string) {
-    this.newPaymentForm.update(f => ({ ...f, [field]: value }));
-  }
-  addPaymentMethod() {
-    const form = this.newPaymentForm();
-    if (form.number && form.expires) {
-      const newPayment: PaymentMethod = {
-        id: Date.now().toString(),
-        type: form.type,
-        last4: form.number.slice(-4),
-        expires: form.expires
-      };
-      this.paymentMethods.update(methods => [...methods, newPayment]);
-      this.closeAddPayment();
-    }
-  }
-  removePaymentMethod(id: string) {
-    this.paymentMethods.update(methods => methods.filter(m => m.id !== id));
-  }
-
-  // Shipments methods
+  // Shipments view toggle
   toggleShipmentsView() {
-    this.showAllShipments.update(show => !show);
+    this.showAllShipmentsFlag = !this.showAllShipmentsFlag;
+  }
+  showAllShipments() {
+    return this.showAllShipmentsFlag;
   }
   getDisplayedShipments() {
-    return this.showAllShipments() ? this.shipments() : this.shipments().slice(0, 3);
+    return this.showAllShipmentsFlag ? this._shipments : this._shipments.slice(0, 3);
   }
 
-  // Simulate actions
-  toggleNotification(type: 'sms' | 'email') {
-    this.notifications.update(n => ({ ...n, [type]: !n[type] }));
+  // Payment methods
+  openAddPayment() {
+    this._paymentEditMode = true;
   }
-} 
+  closeAddPayment() {
+    this._paymentEditMode = false;
+    this._newPaymentForm = { type: 'Visa', number: '', expires: '', cvv: '' };
+  }
+  addPaymentMethod() {
+    // Dummy add, replace with backend integration
+    const newMethod = {
+      id: Math.random().toString(36).substring(2),
+      type: this._newPaymentForm.type,
+      last4: this._newPaymentForm.number.slice(-4),
+      expires: this._newPaymentForm.expires
+    };
+    this._paymentMethods.push(newMethod);
+    this.closeAddPayment();
+  }
+  removePaymentMethod(id: string) {
+    this._paymentMethods = this._paymentMethods.filter(m => m.id !== id);
+  }
+  onPaymentInputChange(field: 'type' | 'number' | 'expires' | 'cvv', value: string) {
+    this._newPaymentForm = { ...this._newPaymentForm, [field]: value };
+  }
+
+  // Notifications
+  toggleNotification(type: 'sms' | 'email') {
+    this._notifications[type] = !this._notifications[type];
+  }
+}

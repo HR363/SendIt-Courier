@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgForOf } from '@angular/common';
+import { NgForOf, NgIf, NgClass, AsyncPipe, DatePipe } from '@angular/common';
+import { ParcelService, Parcel as BackendParcel } from '../../core/services/parcel.service';
+import { Observable } from 'rxjs';
 
 export interface Parcel {
   id: string;
@@ -16,7 +18,7 @@ export interface Parcel {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [RouterLink, NgForOf],
+imports: [RouterLink, NgForOf, NgIf, NgClass, DatePipe],
   templateUrl: './list.html',
   styleUrl: './list.css'
 })
@@ -93,6 +95,10 @@ export class List {
       cost: '$55.00',
     },
   ];
+  sentParcels$!: Observable<BackendParcel[]>;
+  toMeParcels$!: Observable<BackendParcel[]>;
+  filteredSentParcels: BackendParcel[] = [];
+  filteredToMeParcels: BackendParcel[] = [];
 
   toMeParcels: Parcel[] = [
     {
@@ -138,6 +144,7 @@ export class List {
     return parcels.filter(p => p.status === this.statusFilter);
   }
 
+  // Filtering and pagination logic should be updated to work with Observables if needed
   get paginatedParcels(): Parcel[] {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredParcels.slice(start, start + this.pageSize);
@@ -152,13 +159,30 @@ export class List {
     this.currentPage = 1;
   }
 
-  setStatusFilter(status: string) {
-    this.statusFilter = status;
-    this.currentPage = 1;
-  }
+
 
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
+  }
+  
+  constructor(private parcelService: ParcelService) {
+    this.sentParcels$ = this.parcelService.getParcels();
+    this.toMeParcels$ = this.parcelService.getParcels(); // Adjust as needed for real API (e.g., filter by recipient)
+    this.sentParcels$.subscribe(parcels => this.filteredSentParcels = parcels);
+    this.toMeParcels$.subscribe(parcels => this.filteredToMeParcels = parcels);
+  }
+
+  filterParcels(parcels: BackendParcel[]): BackendParcel[] {
+    if (this.statusFilter === 'All') return parcels;
+    return parcels.filter(p => p.status === this.statusFilter);
+  }
+
+  setStatusFilter(event: Event) {
+    const value = (event.target as HTMLSelectElement)?.value || 'All';
+    this.statusFilter = value;
+    this.sentParcels$.subscribe(parcels => this.filteredSentParcels = this.filterParcels(parcels));
+    this.toMeParcels$.subscribe(parcels => this.filteredToMeParcels = this.filterParcels(parcels));
+    this.currentPage = 1;
   }
 }

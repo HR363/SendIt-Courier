@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { roleGuard } from './core/guards/role.guard';
 import { Landing } from './features/landing/landing';
 import { AuthFormComponent } from './features/auth-form/auth-form';
 import { DASHBOARD_ROUTES } from './features/dashboard/dashboard-module';
@@ -11,6 +12,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] },
     loadComponent: () => import('./features/admin/admin-layout').then(m => m.AdminLayout),
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/admin/admin-dashboard').then(m => m.AdminDashboard) },
@@ -22,6 +25,8 @@ export const routes: Routes = [
   },
   {
     path: 'courier',
+    canActivate: [roleGuard],
+    data: { roles: ['COURIER_AGENT'] },
     loadComponent: () => import('./features/courier/courier-layout').then(m => m.CourierLayout),
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/courier/courier-dashboard').then(m => m.CourierDashboard) },
@@ -36,7 +41,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    children: DASHBOARD_ROUTES
+    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
   },
   {
     path: 'auth',

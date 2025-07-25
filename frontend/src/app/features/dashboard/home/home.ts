@@ -4,12 +4,11 @@ import { NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth';
 import { User } from '../../../core/models/user.model';
-import { AnimatedStepsComponent } from './animated-steps.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, AnimatedStepsComponent, NgIf, NgForOf, FormsModule],
+  imports: [RouterLink, NgIf, NgForOf, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })

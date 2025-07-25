@@ -1,36 +1,36 @@
 <div class="profile-page-container">
-  <h1 class="profile-title">Manage Your Profile</h1>
+  <h1 class="profile-title">Manage Your Profilecd </h1>
   <div class="profile-main-grid">
     <!-- Left: User Info and Recent Shipments -->
     <div class="profile-main-left">
       <div class="profile-card">
-        <ng-container *ngIf="!editMode(); else editProfileForm">
+        <ng-container *ngIf="(user$ | async) as user; else editProfileForm">
           <div class="profile-photo-section">
-            <img *ngIf="user().photo; else placeholder" [src]="user().photo" class="profile-photo" alt="Profile photo" />
+            <img *ngIf="user.photo; else placeholder" [src]="user.photo" class="profile-photo" alt="Profile photo" />
             <ng-template #placeholder>
-              <div class="profile-photo-placeholder">{{ user().name[0] }}</div>
+              <div class="profile-photo-placeholder">{{ user.name[0] }}</div>
             </ng-template>
-            <span class="camera-icon" (click)="openEditProfile()"><i class="fa-solid fa-camera"></i></span>
+            <span class="camera-icon" (click)="openEditProfile(user)"><i class="fa-solid fa-camera"></i></span>
           </div>
-          <div class="profile-name">{{ user().name }}</div>
-          <a href="#" class="profile-edit-link" (click)="$event.preventDefault(); openEditProfile()">Edit Account Photo</a>
+          <div class="profile-name">{{ user.name }}</div>
+          <a href="#" class="profile-edit-link" (click)="$event.preventDefault(); openEditProfile(user)">Edit Account Photo</a>
           <div class="profile-info-grid">
             <div>
               <div class="profile-label">Full Name</div>
-              <div class="profile-value">{{ user().name }}</div>
+              <div class="profile-value">{{ user.name }}</div>
             </div>
             <div>
               <div class="profile-label">Email Address</div>
-              <div class="profile-value">{{ user().email }}</div>
+              <div class="profile-value">{{ user.email }}</div>
             </div>
             <div>
               <div class="profile-label">Phone Number</div>
-              <div class="profile-value">{{ user().phone }}</div>
+              <div class="profile-value">{{ user.phone }}</div>
             </div>
           </div>
           <div class="profile-actions">
             <button class="profile-btn profile-btn-outline">Change Password</button>
-            <button class="profile-btn profile-btn-orange" (click)="openEditProfile()">Update Details</button>
+            <button class="profile-btn profile-btn-orange" (click)="openEditProfile(user)">Update Details</button>
           </div>
         </ng-container>
         <ng-template #editProfileForm>
@@ -38,7 +38,7 @@
             <div class="profile-photo-section">
               <img *ngIf="photoPreview(); else editPlaceholder" [src]="photoPreview()" class="profile-photo" alt="Profile photo preview" />
               <ng-template #editPlaceholder>
-                <div class="profile-photo-placeholder">{{ editForm().name[0] || 'U' }}</div>
+                <div class="profile-photo-placeholder">{{ editForm().name?.[0] || 'U' }}</div>
               </ng-template>
               <label class="camera-icon" for="photoInput"><i class="fa-solid fa-camera"></i></label>
               <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
@@ -91,10 +91,10 @@
     <div class="profile-main-right">
       <div class="profile-card profile-completeness">
         <div class="profile-label">Profile Completeness</div>
-        <div class="profile-progress-bar">
-          <div class="profile-progress" [style.width]="user().profileComplete + '%'" ></div>
+        <div class="profile-progress-bar" *ngIf="(user$ | async) as user">
+          <div class="profile-progress" [style.width]="user.profileComplete + '%'" ></div>
         </div>
-        <div class="profile-progress-text">Your profile is {{ user().profileComplete }}% complete. Add more details to enhance your experience.</div>
+        <div class="profile-progress-text" *ngIf="(user$ | async) as user">Your profile is {{ user.profileComplete }}% complete. Add more details to enhance your experience.</div>
         <button class="profile-btn profile-btn-orange w-full">Complete Profile</button>
       </div>
       <div class="profile-card profile-payments">
