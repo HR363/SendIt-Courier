@@ -11,17 +11,17 @@
         </div>
         <div class="info-content">
           <div class="info-row">
-            <div><span class="info-label">Parcel ID:</span> {{ parcel.id }}</div>
-            <div><span class="info-label">Status:</span> <span class="status-badge orange">{{ parcel.status }}</span></div>
-            <div><span class="info-label">Weight:</span> {{ parcel.weight }}</div>
+            <div><span class="info-label">Parcel ID:</span> {{ (parcel$ | async)?.id }}</div>
+            <div><span class="info-label">Status:</span> <span class="status-badge orange">{{ (parcel$ | async)?.status }}</span></div>
+            <div><span class="info-label">Weight:</span> {{ (parcel$ | async)?.weight }} kg</div>
           </div>
           <div class="info-row">
-            <div><span class="info-label">Pickup Date:</span> {{ parcel.pickupDate }}</div>
-            <div><span class="info-label">Est. Delivery:</span> {{ parcel.deliveryDate }}</div>
+            <div><span class="info-label">Pickup Date:</span> {{ (parcel$ | async)?.createdAt | date:'yyyy-MM-dd' }}</div>
+            <div><span class="info-label">Est. Delivery:</span> {{ (parcel$ | async)?.estimatedDeliveryDate | date:'yyyy-MM-dd' }}</div>
           </div>
           <div class="info-row">
-            <div><span class="info-label">Service Type:</span> {{ parcel.serviceType }}</div>
-            <div><span class="info-label">Dimensions:</span> {{ parcel.dimensions }}</div>
+            <div><span class="info-label">Category:</span> {{ (parcel$ | async)?.category?.name }}</div>
+            <div><span class="info-label">Description:</span> {{ (parcel$ | async)?.description }}</div>
           </div>
         </div>
       </div>
@@ -43,14 +43,22 @@
           <span class="section-title"><i class="fa-solid fa-route"></i> Delivery Timeline</span>
         </div>
         <div class="timeline-stepper">
-          <div *ngFor="let step of timeline; let i = index" class="step" [ngClass]="step.status">
-            <div class="step-icon"><i class="fa-solid" [ngClass]="step.icon"></i></div>
+          <div class="step done">
+            <div class="step-icon"><i class="fa-solid fa-clipboard-list"></i></div>
             <div class="step-content">
-              <div class="step-label">{{ step.label }}</div>
-              <div class="step-date">{{ step.date }}</div>
-              <div class="step-location">{{ step.location }}</div>
+              <div class="step-label">Order Placed</div>
+              <div class="step-date">{{ (parcel$ | async)?.createdAt | date:'yyyy-MM-dd HH:mm' }}</div>
+              <div class="step-location">Online Portal</div>
             </div>
-            <div class="step-bar" *ngIf="i < timeline.length - 1"></div>
+            <div class="step-bar"></div>
+          </div>
+          <div class="step" [ngClass]="(parcel$ | async)?.status === 'DELIVERED' ? 'done' : 'current'">
+            <div class="step-icon"><i class="fa-solid fa-truck"></i></div>
+            <div class="step-content">
+              <div class="step-label">{{ (parcel$ | async)?.status }}</div>
+              <div class="step-date">{{ (parcel$ | async)?.updatedAt | date:'yyyy-MM-dd HH:mm' }}</div>
+              <div class="step-location">In Progress</div>
+            </div>
           </div>
         </div>
       </div>
@@ -62,20 +70,20 @@
       <div class="card side-card">
         <div class="side-header"><i class="fa-solid fa-user"></i> Sender Details</div>
         <div class="side-content">
-          <div class="side-name">{{ sender.name }}</div>
-          <div class="side-info"><i class="fa-solid fa-location-dot"></i> {{ sender.address }}</div>
-          <div class="side-info"><i class="fa-solid fa-phone"></i> {{ sender.phone }}</div>
-          <div class="side-info"><i class="fa-solid fa-envelope"></i> {{ sender.email }}</div>
+          <div class="side-name">{{ (parcel$ | async)?.senderName }}</div>
+          <div class="side-info"><i class="fa-solid fa-location-dot"></i> {{ (parcel$ | async)?.pickupLocation?.address }}</div>
+          <div class="side-info"><i class="fa-solid fa-phone"></i> {{ (parcel$ | async)?.senderPhone }}</div>
+          <div class="side-info"><i class="fa-solid fa-envelope"></i> {{ (parcel$ | async)?.senderEmail }}</div>
         </div>
       </div>
       <!-- Receiver Card -->
       <div class="card side-card">
         <div class="side-header"><i class="fa-solid fa-user"></i> Receiver Details</div>
         <div class="side-content">
-          <div class="side-name">{{ receiver.name }}</div>
-          <div class="side-info"><i class="fa-solid fa-location-dot"></i> {{ receiver.address }}</div>
-          <div class="side-info"><i class="fa-solid fa-phone"></i> {{ receiver.phone }}</div>
-          <div class="side-info"><i class="fa-solid fa-envelope"></i> {{ receiver.email }}</div>
+          <div class="side-name">{{ (parcel$ | async)?.receiverName }}</div>
+          <div class="side-info"><i class="fa-solid fa-location-dot"></i> {{ (parcel$ | async)?.destinationLocation?.address }}</div>
+          <div class="side-info"><i class="fa-solid fa-phone"></i> {{ (parcel$ | async)?.receiverPhone }}</div>
+          <div class="side-info"><i class="fa-solid fa-envelope"></i> {{ (parcel$ | async)?.receiverEmail }}</div>
         </div>
       </div>
       <!-- Actions Card -->
@@ -90,7 +98,7 @@
       <!-- Notes Card -->
       <div class="card side-card notes-card">
         <div class="side-header"><i class="fa-solid fa-note-sticky"></i> Delivery Notes</div>
-        <div class="notes-content">{{ notes }}</div>
+        <div class="notes-content">{{ (parcel$ | async)?.description || 'No special notes' }}</div>
       </div>
     </div>
   </div>

@@ -7,7 +7,9 @@ import { ParcelsModule } from './parcels/parcels.module';
 import { CategoriesModule } from './categories/categories.module';
 import { UploadModule } from './upload/upload.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PickupRequestModule } from './pickup-request/pickup-request.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
     CategoriesModule,
     UploadModule,
     ReviewsModule,
+    MetricsModule,
+    PickupRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

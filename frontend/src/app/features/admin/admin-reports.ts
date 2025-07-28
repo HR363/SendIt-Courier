@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ReviewService, Review } from '../../core/services/review.service';
 
 interface Report {
   id: string;
@@ -18,13 +19,23 @@ interface Report {
   templateUrl: './admin-reports.html',
   styleUrls: ['./admin-reports.css']
 })
-export class AdminReportsComponent {
-  reports: Report[] = [
-    { id: 'RPT-001', type: 'Complaint', user: 'Alice Smith', message: 'Parcel delayed beyond ETA.', date: '2025-07-20', status: 'Open' },
-    { id: 'RPT-002', type: 'Feedback', user: 'Bob Johnson', message: 'Great delivery experience!', date: '2025-07-19', status: 'Resolved' },
-    { id: 'RPT-003', type: 'Complaint', user: 'Jane Doe', message: 'Package arrived damaged.', date: '2025-07-18', status: 'In Progress' },
-    { id: 'RPT-004', type: 'Feedback', user: 'Sam Lee', message: 'Support was very helpful.', date: '2025-07-17', status: 'Resolved' }
-  ];
+export class AdminReportsComponent implements OnInit {
+  reports: Report[] = [];
+
+  constructor(private reviewService: ReviewService) {}
+
+  ngOnInit(): void {
+    this.reviewService.getAllReviews().subscribe((reviews: Review[]) => {
+      this.reports = reviews.map((review) => ({
+        id: review.id,
+        type: review.rating >= 4 ? 'Feedback' : 'Complaint',
+        user: review.user ? `${review.user.firstName} ${review.user.lastName}` : review.userId,
+        message: review.comment || '',
+        date: review.createdAt.split('T')[0],
+        status: 'Open', // You can update this if you add a status field to Review
+      }));
+    });
+  }
 
   setStatus(report: Report, status: Report['status']) {
     report.status = status;

@@ -1,14 +1,16 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIf, NgForOf } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
+import { PickupRequestService } from '../../../core/services/pickup-request.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, NgIf, NgForOf, FormsModule],
+  imports: [RouterLink, NgIf, NgForOf, FormsModule, ReactiveFormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -16,14 +18,7 @@ export class Home implements OnInit {
   user: User | null = null;
   currentStep = signal(0);
   showPickupModal = signal(false);
-  pickupForm = signal({
-    senderName: '',
-    senderPhone: '',
-    pickupAddress: '',
-    parcelDescription: '',
-    pickupDate: '',
-    specialInstructions: ''
-  });
+  pickupFormGroup!: FormGroup;
   pickupSuccess = signal(false);
   steps = [
     {
@@ -60,14 +55,24 @@ export class Home implements OnInit {
     }
   ];
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private fb: FormBuilder,
+    private pickupRequestService: PickupRequestService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
-    this.auth.getProfile().subscribe({
-      next: user => this.user = user,
-      error: () => this.user = null
-    });
+    this.user = this.auth.getCurrentUser();
     setTimeout(() => this.setupScrollSteps(), 300);
+    this.pickupFormGroup = this.fb.group({
+      senderName: ['', Validators.required],
+      senderPhone: ['', Validators.required],
+      pickupAddress: ['', Validators.required],
+      parcelDescription: ['', Validators.required],
+      pickupDate: ['', Validators.required],
+      specialInstructions: ['']
+    });
   }
 
   setupScrollSteps() {
@@ -96,19 +101,34 @@ export class Home implements OnInit {
     this.resetPickupForm();
   }
   submitPickupRequest() {
-    // Simulate a successful request
-    setTimeout(() => {
-      this.pickupSuccess.set(true);
-    }, 700);
+    if (this.pickupFormGroup.invalid) {
+      this.pickupFormGroup.markAllAsTouched();
+      return;
+    }
+    const form = this.pickupFormGroup.value;
+    const dto = {
+      parcelDetails: JSON.stringify({
+        senderName: form.senderName,
+        senderPhone: form.senderPhone,
+        parcelDescription: form.parcelDescription,
+        pickupDate: form.pickupDate,
+        specialInstructions: form.specialInstructions
+      }),
+      pickupLocation: form.pickupAddress
+    };
+    this.pickupRequestService.createPickupRequest(dto).subscribe({
+      next: () => {
+        this.pickupSuccess.set(true);
+        this.toast.show('Pickup request submitted!', 'success');
+        this.pickupFormGroup.reset();
+      },
+      error: (err) => {
+        this.toast.show('Failed to submit pickup request', 'error');
+        console.error('Pickup request error:', err);
+      }
+    });
   }
   resetPickupForm() {
-    this.pickupForm.set({
-      senderName: '',
-      senderPhone: '',
-      pickupAddress: '',
-      parcelDescription: '',
-      pickupDate: '',
-      specialInstructions: ''
-    });
+    this.pickupFormGroup.reset();
   }
 }

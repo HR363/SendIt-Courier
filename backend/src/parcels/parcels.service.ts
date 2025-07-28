@@ -19,14 +19,85 @@ export class ParcelsService {
     }
     // Generate unique tracking number
     const trackingNumber = uuidv4();
-    const parcel = await this.prisma.parcel.create({
-      data: {
-        ...dto,
-        trackingNumber,
-        createdById: user.userId,
-        isActive: true,
-      },
-    });
+    
+    // For now, we'll use the current user as both sender and receiver
+    // since the schema requires these relationships
+    // Ensure estimatedDeliveryDate is in proper ISO format
+    let estimatedDeliveryDate = dto.estimatedDeliveryDate;
+    if (!estimatedDeliveryDate) {
+      // If no date provided, set to 3 days from now
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 3);
+      estimatedDeliveryDate = futureDate.toISOString();
+    } else if (typeof estimatedDeliveryDate === 'string' && !estimatedDeliveryDate.includes('T')) {
+      // If it's a date string without time, add time component
+      estimatedDeliveryDate = new Date(estimatedDeliveryDate + 'T00:00:00.000Z').toISOString();
+    }
+
+    const data: any = {
+      senderName: dto.senderName,
+      senderPhone: dto.senderPhone,
+      senderEmail: dto.senderEmail,
+      receiverName: dto.receiverName,
+      receiverPhone: dto.receiverPhone,
+      receiverEmail: dto.receiverEmail,
+      pickupLocation: dto.pickupLocation,
+      destinationLocation: dto.destinationLocation,
+      weight: Number(dto.weight),
+      description: dto.description || '',
+      status: dto.status,
+      estimatedDeliveryDate: estimatedDeliveryDate,
+      price: Number(dto.price),
+      trackingNumber,
+      isActive: true,
+    };
+    
+    // Connect to existing user as sender
+    const senderUserId = dto.senderId || user.userId;
+    data.sender = { connect: { id: senderUserId } };
+    
+    // Connect to existing user as receiver
+    const receiverUserId = dto.receiverId || user.userId;
+    data.receiver = { connect: { id: receiverUserId } };
+    
+    // Connect to the user who created the parcel
+    data.createdBy = { connect: { id: user.userId } };
+    
+    // If the creator is a courier, assign the parcel to them
+    if (user.role === 'COURIER_AGENT') {
+      data.assignedCourier = { connect: { id: user.userId } };
+    }
+    
+    // Handle category relationship
+    if (dto.categoryId) {
+      data.category = { connect: { id: dto.categoryId } };
+    } else {
+      // Use a default category if none is provided
+      // First, try to find a default category
+      const defaultCategory = await this.prisma.parcelCategory.findFirst({
+        where: { isActive: true }
+      });
+      
+      if (defaultCategory) {
+        data.category = { connect: { id: defaultCategory.id } };
+      } else {
+        // If no categories exist, create a default one
+        const newCategory = await this.prisma.parcelCategory.create({
+          data: {
+            name: 'General',
+            description: 'General parcel category',
+            minWeight: 0,
+            maxWeight: 100,
+            pricePerKg: 5,
+            basePrice: 10,
+            isActive: true
+          }
+        });
+        data.category = { connect: { id: newCategory.id } };
+      }
+    }
+    
+    const parcel = await this.prisma.parcel.create({ data });
     // Return safe fields only
     const { id, senderId, receiverId, categoryId, trackingNumber: tn, status, isActive, createdAt, updatedAt } = parcel;
     return { id, senderId, receiverId, categoryId, trackingNumber: tn, status, isActive, createdAt, updatedAt };
@@ -78,8 +149,8 @@ export class ParcelsService {
       },
     });
     // Send status update emails
-    const sender = await this.prisma.user.findUnique({ where: { id: parcel.senderId } });
-    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId } });
+    const sender = await this.prisma.user.findUnique({ where: { id: parcel.senderId ?? undefined } });
+    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId ?? undefined } });
     if (sender) {
       await this.mailService.sendStatusUpdateEmail(sender.email, sender.firstName, parcel.trackingNumber, dto.status);
     }
@@ -108,6 +179,20 @@ export class ParcelsService {
   async getReceivedParcels(userId: string) {
     return this.prisma.parcel.findMany({
       where: { receiverId: userId, isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getAssignedParcels(userId: string) {
+    return this.prisma.parcel.findMany({
+      where: { assignedCourierId: userId, isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getAllParcels() {
+    return this.prisma.parcel.findMany({
+      where: { isActive: true },
       orderBy: { createdAt: 'desc' },
     });
   }

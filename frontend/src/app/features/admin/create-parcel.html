@@ -18,6 +18,14 @@
           <input type="text" id="senderName" formControlName="senderName" placeholder="e.g., John Doe">
         </div>
         <div class="form-field">
+          <label for="senderPhone">Sender Phone</label>
+          <input type="tel" id="senderPhone" formControlName="senderPhone" placeholder="e.g., +1 (555) 123-4567">
+        </div>
+        <div class="form-field">
+          <label for="senderEmail">Sender Email</label>
+          <input type="email" id="senderEmail" formControlName="senderEmail" placeholder="e.g., john@example.com">
+        </div>
+        <div class="form-field">
           <label for="receiverName">Receiver Name</label>
           <input type="text" id="receiverName" formControlName="receiverName" placeholder="e.g., Jane Smith">
         </div>
@@ -73,7 +81,7 @@
       <div class="service-options-grid">
         <div class="delivery-type">
           <label class="block-label">Delivery Service Type</label>
-          <div class="radio-group" formGroupName="serviceType">
+          <div class="radio-group">
             <label><input type="radio" value="Standard" formControlName="serviceType"> Standard (3-5 days)</label>
             <label><input type="radio" value="Express" formControlName="serviceType"> Express (1-2 days)</label>
             <label><input type="radio" value="Overnight" formControlName="serviceType"> Overnight</label>

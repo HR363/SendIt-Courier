@@ -1,7 +1,7 @@
 // ...existing code...
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, Subject } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
@@ -9,21 +9,32 @@ export interface LoginRequest {
 }
 
 export interface SignupRequest {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   phone: string;
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: any;
+  access_token: string;
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    isActive: boolean;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = 'http://localhost:3000/api/auth';
+  private loginSuccessSubject = new Subject<void>();
+
+  // Observable that other services can subscribe to
+  loginSuccess$ = this.loginSuccessSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -40,21 +51,37 @@ export class AuthService {
   }
 
   saveTokens(res: AuthResponse) {
-    if (res.accessToken) {
-      localStorage.setItem('accessToken', res.accessToken);
+    if (res.access_token) {
+      localStorage.setItem('accessToken', res.access_token);
     }
-    if (res.refreshToken) {
-      localStorage.setItem('refreshToken', res.refreshToken);
+    if (res.user) {
+      localStorage.setItem('user', JSON.stringify(res.user));
     }
+    // Notify other services that login was successful
+    this.loginSuccessSubject.next();
   }
 
   logout() {
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
   }
 
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken');
+  }
+
+  getCurrentUser(): any {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getAccessToken();
+  }
+
+  getUserRole(): string | null {
+    const user = this.getCurrentUser();
+    return user ? user.role : null;
   }
 
   sendVerificationCode(email: string): Observable<any> {

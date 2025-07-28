@@ -3,15 +3,19 @@
   background: #f7fafd;
   display: flex;
   flex-direction: column;
-  padding: 2.5rem 0 2.5rem 0;
+  padding: 2.5rem 3rem;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .welcome-section {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
   padding-top: 0;
+  width: 100%;
 }
 .welcome-greeting {
   display: flex;
@@ -23,39 +27,39 @@
   margin-right: 0.5rem;
 }
 .welcome-title {
-  font-size: 2.3rem;
+  font-size: 2.5rem;
   font-weight: 800;
   color: #181c32;
   margin: 0;
 }
 .welcome-message {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #6b7280;
   font-weight: 500;
   margin-top: 0.5rem;
 }
 
 .quick-actions-title {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #181c32;
-  margin-bottom: 0.7rem;
-  margin-left: 0.2rem;
+  margin-bottom: 1.5rem;
   letter-spacing: 0.01em;
+  width: 100%;
 }
 .quick-actions-row {
-  display: flex;
-  gap: 2.2rem;
-  margin-bottom: 2.5rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+  width: 100%;
 }
 .action-card {
   background: #fff;
   border-radius: 1.2rem;
   box-shadow: 0 2px 12px #e5e7eb80;
-  padding: 2.2rem 2.5rem 1.7rem 2.5rem;
-  min-width: 240px;
-  min-height: 160px;
+  padding: 2.5rem 2rem 2rem 2rem;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -70,12 +74,12 @@
   transform: translateY(-2px) scale(1.03);
 }
 .action-icon {
-  font-size: 2.8rem;
+  font-size: 3rem;
   color: #fff;
   background: #fd7e14;
   border-radius: 0.7rem;
-  padding: 0.7rem 1rem;
-  margin-bottom: 1.1rem;
+  padding: 0.8rem 1.2rem;
+  margin-bottom: 1.2rem;
   transition: transform 0.2s, background 0.2s;
   display: flex;
   align-items: center;
@@ -88,7 +92,7 @@
   background: #1d3d32;
 }
 .action-label {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #181c32;
   letter-spacing: 0.01em;
@@ -98,12 +102,9 @@
   background: #fff;
   border-radius: 1.2rem;
   box-shadow: 0 2px 12px #e5e7eb80;
-  padding: 2rem 2.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  width: 100%;
 }
 .announcements-header {
   display: flex;
@@ -312,77 +313,86 @@
 }
 
 .shipping-steps-section {
-  width: 99vw;
-  margin: 3rem 0 2rem 50%;
-  transform: translateX(-50%);
-  padding: 2.5rem 2vw;
-  background: #fff;
+  width: 100%;
+  margin: 3rem 0;
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #fff7ed 0%, #fdba74 100%);
   border-radius: 1.5rem;
-  box-shadow: 0 2px 12px #e5e7eb80;
+  box-shadow: 0 8px 32px 0 #fdba7440;
+  position: relative;
+  overflow: hidden;
 }
+
 .shipping-steps-title {
   text-align: center;
   font-size: 2.2rem;
-  font-weight: 900;
+  font-weight: 800;
   color: #181c32;
-  margin-bottom: 2.5rem;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
 }
+
 .shipping-steps-title .highlight-modern {
+  background: linear-gradient(90deg, #fd7e14 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  background: #fff;
   color: #fd7e14;
   font-weight: 900;
-  padding: 0 0.2em;
-  border-bottom: 5px solid #fd7e14;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #fff7ed 60%, #fdba74 100%);
-  box-decoration-break: clone;
-  font-style: italic;
-  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(253, 126, 20, 0.2);
 }
+
 .shipping-steps-timeline {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 5rem;
+  gap: 2rem;
+  max-width: 100%;
   width: 100%;
-  /* Remove max-width and centering */
-  margin: 0;
+  padding: 0 2rem;
 }
+
 .shipping-step {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
-  min-height: 220px;
-  position: relative;
+  gap: 2rem;
+  min-height: 120px;
   width: 100%;
+  max-width: 100%;
 }
+
 .shipping-step.left {
   flex-direction: row;
   justify-content: flex-start;
-  align-self: flex-start;
-  margin-left: 0;
-  margin-right: auto;
+  align-items: center;
 }
+
 .shipping-step.right {
   flex-direction: row-reverse;
   justify-content: flex-end;
-  align-self: flex-end;
-  margin-right: 0;
-  margin-left: auto;
+  align-items: center;
 }
+
 .shipping-step.left .step-img {
-  margin-left: 0;
+  order: 1;
 }
+
 .shipping-step.left .step-desc {
-  margin-left: 0;
+  order: 2;
+  text-align: left;
 }
+
 .shipping-step.right .step-img {
-  margin-right: 0;
+  order: 2;
 }
+
 .shipping-step.right .step-desc {
-  margin-right: 0;
+  order: 1;
+  text-align: right;
 }
 .step-img {
   flex-shrink: 0;

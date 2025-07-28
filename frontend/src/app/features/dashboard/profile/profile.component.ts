@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService, UserProfile } from './user.service';
+import { UploadService } from '../../../core/services/upload.service';
 import { Observable } from 'rxjs';
 import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
 
@@ -40,7 +41,10 @@ export class ProfileComponent {
   _notifications = { sms: false, email: false };
   showAllShipmentsFlag = false;
 
-  constructor(private userService: UserService) {
+  constructor(
+    private userService: UserService,
+    private uploadService: UploadService
+  ) {
     this.user$ = this.userService.getProfile();
   }
 
@@ -65,7 +69,18 @@ export class ProfileComponent {
     this._photoPreview = null;
   }
   saveProfile() {
-    this.userService.updateProfile({ ...this._editForm, photo: this._photoPreview || undefined }).subscribe(() => {
+    // Extract only the fields that the backend supports
+    const { name, email, phone } = this._editForm;
+
+    // Split name into firstName and lastName if provided
+    let updateData: any = { email, phone };
+    if (name) {
+      const nameParts = name.trim().split(' ');
+      updateData.firstName = nameParts[0] || '';
+      updateData.lastName = nameParts.slice(1).join(' ') || '';
+    }
+
+    this.userService.updateProfile(updateData).subscribe(() => {
       this.editMode = false;
       this._photoPreview = null;
       // No need to manually reload user; Observable will update if service emits new value
@@ -77,11 +92,34 @@ export class ProfileComponent {
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      // Show preview immediately
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = () => {
         this._photoPreview = reader.result as string;
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
+
+      // Upload to Cloudinary
+      this.uploadService.uploadProfilePhoto(file).subscribe({
+        next: (response) => {
+          // Update the user's profile with the new photo URL
+          this.userService.updateProfile({ profilePhoto: response.url }).subscribe({
+            next: () => {
+              console.log('Profile photo updated successfully');
+            },
+            error: (error) => {
+              console.error('Error updating profile photo:', error);
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error uploading photo:', error);
+          // Reset preview on error
+          this._photoPreview = null;
+        }
+      });
     }
   }
 

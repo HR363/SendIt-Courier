@@ -21,6 +21,7 @@ model User {
   phone      String   @unique
   password   String
   role       String   // UserRole
+  profilePhoto String? // Cloudinary URL for profile photo
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -39,6 +40,8 @@ model User {
   assignedParcels  Parcel[]        @relation("AssignedParcels")
   reviews          Review[]
   statusUpdates    ParcelStatusHistory[]
+  pickupRequests   PickupRequest[] @relation("UserPickupRequests")
+  assignedPickupRequests PickupRequest[] @relation("CourierAssignedPickupRequests")
 }
 
 model ParcelCategory {
@@ -60,9 +63,9 @@ model ParcelCategory {
 model Parcel {
   id                  String   @id @default(uuid())
   trackingNumber      String   @unique
-  senderId            String
-  receiverId          String
-  categoryId          String
+  senderId            String?
+  receiverId          String?
+  categoryId          String?
   createdById         String
   assignedCourierId   String?
   senderName          String
@@ -85,9 +88,9 @@ model Parcel {
   updatedAt           DateTime @updatedAt
   deletedAt           DateTime?
   // Relations
-  sender              User     @relation("SentParcels", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  receiver            User     @relation("ReceivedParcels", fields: [receiverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  category            ParcelCategory @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sender              User?     @relation("SentParcels", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  receiver            User?     @relation("ReceivedParcels", fields: [receiverId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category            ParcelCategory? @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   createdBy           User     @relation("CreatedParcels", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
   assignedCourier     User?    @relation("AssignedParcels", fields: [assignedCourierId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   reviews             Review[]
@@ -120,4 +123,19 @@ model ParcelStatusHistory {
   // Relations
   parcel     Parcel   @relation(fields: [parcelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedBy  User     @relation(fields: [updatedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model PickupRequest {
+  id                String   @id @default(uuid())
+  requesterId       String
+  assignedCourierId String?
+  parcelDetails     String   // JSON string with parcel info
+  pickupLocation    String   // JSON string or address
+  status            String   // 'PENDING', 'COMPLETED'
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  completedAt       DateTime?
+  // Relations
+  requester         User     @relation("UserPickupRequests", fields: [requesterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  assignedCourier   User?    @relation("CourierAssignedPickupRequests", fields: [assignedCourierId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 } 

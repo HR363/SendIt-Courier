@@ -1,45 +1,70 @@
-import { Component } from '@angular/core';
-import { NgForOf, NgClass } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { NgForOf, NgClass, AsyncPipe, DatePipe } from '@angular/common';
 import { AdminParcelDetailsPopup } from './admin-parcel-details-popup';
 import { FormsModule } from '@angular/forms';
-
-interface Parcel {
-  id: string;
-  sender: string;
-  receiver: string;
-  status: 'In Transit' | 'Delivered' | 'Pending' | 'On Hold' | 'Cancelled';
-  lastUpdate: string;
-  zone: string;
-}
+import { ParcelService, Parcel } from '../../core/services/parcel.service';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-admin-manage-parcels',
   standalone: true,
-  imports: [NgForOf, NgClass, FormsModule, AdminParcelDetailsPopup],
+  imports: [NgForOf, NgClass, FormsModule, AdminParcelDetailsPopup, AsyncPipe, DatePipe],
   templateUrl: './admin-manage-parcels.html',
   styleUrls: ['./admin-manage-parcels.css']
 })
-export class AdminManageParcels {
-  statuses = ['All Statuses', 'In Transit', 'Delivered', 'Pending', 'On Hold', 'Cancelled'];
-  zones = ['All Zones', 'Zone 1', 'Zone 2', 'Zone 3'];
-  selectedStatus = 'All Statuses';
-  selectedZone = 'All Zones';
-  search = '';
-  parcels: Parcel[] = [
-    { id: 'CC-001-2024-0001', sender: 'Alice Smith', receiver: 'Bob Johnson', status: 'In Transit', lastUpdate: '2024-07-25 10:30 AM', zone: 'Zone 1' },
-    { id: 'CC-001-2024-0002', sender: 'Charlie Brown', receiver: 'Diana Prince', status: 'Delivered', lastUpdate: '2024-07-24 03:15 PM', zone: 'Zone 2' },
-    { id: 'CC-001-2024-0003', sender: 'Eve Adams', receiver: 'Frank White', status: 'Pending', lastUpdate: '2024-07-25 09:00 AM', zone: 'Zone 1' },
-    { id: 'CC-001-2024-0004', sender: 'Grace Lee', receiver: 'Henry Kim', status: 'On Hold', lastUpdate: '2024-07-23 02:00 PM', zone: 'Zone 3' },
-    { id: 'CC-001-2024-0005', sender: 'Ivy Chen', receiver: 'Jack Davis', status: 'In Transit', lastUpdate: '2024-07-25 11:45 AM', zone: 'Zone 2' },
-    { id: 'CC-001-2024-0006', sender: 'Karen Green', receiver: 'Liam Hall', status: 'Delivered', lastUpdate: '2024-07-22 09:00 AM', zone: 'Zone 1' },
-    { id: 'CC-001-2024-0007', sender: 'Mike Ross', receiver: 'Nancy Drew', status: 'Pending', lastUpdate: '2024-07-25 07:10 AM', zone: 'Zone 3' },
-    { id: 'CC-001-2024-0008', sender: 'Olivia King', receiver: 'Peter Jones', status: 'Cancelled', lastUpdate: '2024-07-21 04:00 PM', zone: 'Zone 2' },
-    { id: 'CC-001-2024-0009', sender: 'Quinn Taylor', receiver: 'Rachel White', status: 'In Transit', lastUpdate: '2024-07-25 08:20 AM', zone: 'Zone 1' },
-    { id: 'CC-001-2024-0010', sender: 'Sam Miller', receiver: 'Tina Black', status: 'Pending', lastUpdate: '2024-07-25 09:00 AM', zone: 'Zone 3' },
-  ];
-  page = 1;
-  pageSize = 10;
+export class AdminManageParcels implements OnInit {
+  allParcels$!: Observable<Parcel[]>;
+  filteredParcels$!: Observable<Parcel[]>;
 
+  statuses = ['All Statuses', 'PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+  selectedStatus = 'All Statuses';
+  search = '';
+
+  parcelsInTransit = 0;
+  deliveredToday = 0;
+  pendingPickup = 0;
+
+  updateStats(parcels: Parcel[]) {
+    const today = new Date();
+    this.parcelsInTransit = parcels.filter(p => p.status === 'IN_TRANSIT').length;
+    this.deliveredToday = parcels.filter(p => p.status === 'DELIVERED' && this.isToday(p.actualDeliveryDate)).length;
+    this.pendingPickup = parcels.filter(p => p.status === 'PENDING').length;
+  }
+
+  constructor(private parcelService: ParcelService) {}
+
+  ngOnInit() {
+    this.loadParcels();
+  }
+
+  loadParcels() {
+    this.allParcels$ = this.parcelService.getAllParcels();
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    this.filteredParcels$ = this.allParcels$.pipe(
+      map(parcels => {
+        let filtered = parcels;
+
+        if (this.selectedStatus !== 'All Statuses') {
+          filtered = filtered.filter(p => p.status === this.selectedStatus);
+        }
+
+        if (this.search.trim()) {
+          const searchTerm = this.search.toLowerCase();
+          filtered = filtered.filter(p =>
+            p.id.toLowerCase().includes(searchTerm) ||
+            p.senderName.toLowerCase().includes(searchTerm) ||
+            p.receiverName.toLowerCase().includes(searchTerm)
+          );
+        }
+
+        this.updateStats(filtered);
+        return filtered;
+      })
+    );
+  }
   showDetails = false;
   selectedParcel: Parcel | null = null;
 
@@ -47,58 +72,44 @@ export class AdminManageParcels {
     this.selectedParcel = parcel;
     this.showDetails = true;
   }
+
   closeDetails() {
     this.showDetails = false;
     this.selectedParcel = null;
   }
 
-  get filteredParcels() {
-    let filtered = this.parcels;
-    if (this.selectedStatus !== 'All Statuses') {
-      filtered = filtered.filter(p => p.status === this.selectedStatus);
-    }
-    if (this.selectedZone !== 'All Zones') {
-      filtered = filtered.filter(p => p.zone === this.selectedZone);
-    }
-    if (this.search.trim()) {
-      const s = this.search.trim().toLowerCase();
-      filtered = filtered.filter(p =>
-        p.id.toLowerCase().includes(s) ||
-        p.sender.toLowerCase().includes(s) ||
-        p.receiver.toLowerCase().includes(s)
-      );
-    }
-    return filtered;
+  onStatusChange() {
+    this.applyFilters();
   }
 
-  get paginatedParcels() {
-    const start = (this.page - 1) * this.pageSize;
-    return this.filteredParcels.slice(start, start + this.pageSize);
+  onSearchChange() {
+    this.applyFilters();
   }
 
-  get totalPages() {
-    return Math.ceil(this.filteredParcels.length / this.pageSize) || 1;
+  updateParcelStatus(parcel: Parcel, newStatus: string) {
+    this.parcelService.updateParcelStatus(parcel.id, { status: newStatus }).subscribe(() => {
+      this.loadParcels(); // Refresh data
+    });
   }
 
-  getStatusClass(status: string): string {
-    return status.replace(/\s/g, '').toLowerCase();
+  assignCourier(parcel: Parcel, courierId: string) {
+    this.parcelService.assignCourier(parcel.id, { courierId }).subscribe(() => {
+      this.loadParcels(); // Refresh data
+    });
   }
 
-  min(a: number, b: number): number {
-    return Math.min(a, b);
+  deleteParcel(parcel: Parcel) {
+    this.parcelService.deleteParcel(parcel.id).subscribe(() => {
+      this.loadParcels(); // Refresh data
+    });
   }
 
-  max(a: number, b: number): number {
-    return Math.max(a, b);
+  isToday(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    const today = new Date();
+    return date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
   }
-
-  setStatus(parcel: Parcel, status: string) {
-    parcel.status = status as Parcel['status'];
-  }
-
-  clearFilters() {
-    this.selectedStatus = 'All Statuses';
-    this.selectedZone = 'All Zones';
-    this.search = '';
-  }
-} 
+}

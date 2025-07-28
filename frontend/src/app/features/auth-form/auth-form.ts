@@ -1,13 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIf, NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-auth-form',
   standalone: true,
-  imports: [NgIf, NgClass, FormsModule],
+  imports: [NgIf, NgClass, ReactiveFormsModule, FormsModule],
   templateUrl: './auth-form.html',
   styleUrls: ['./auth-form.css']
 })
@@ -20,11 +20,28 @@ export class AuthFormComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
 
+  // Reactive forms
+  signupForm: FormGroup;
+  signinForm: FormGroup;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private auth: AuthService
-  ) {}
+    private auth: AuthService,
+    private fb: FormBuilder
+  ) {
+    this.signupForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      phone: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+
+    this.signinForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]]
+    });
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
@@ -47,21 +64,34 @@ export class AuthFormComponent implements OnInit {
     });
   }
 
-  onSignup(email: string, name?: string, password?: string, phone?: string): void {
+  onSignup(): void {
+    if (this.signupForm.invalid) {
+      this.signupForm.markAllAsTouched();
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
+
+    const formValue = this.signupForm.value;
+    // Split name into firstName and lastName
+    const nameParts = (formValue.name || '').trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     this.auth.signup({
-      name: name || '',
-      email,
-      password: password || '',
-      phone: phone || ''
+      firstName,
+      lastName,
+      email: formValue.email,
+      password: formValue.password,
+      phone: formValue.phone
     }).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading.set(false);
-        this.verificationEmail = email;
+        this.verificationEmail = formValue.email;
         this.mode = 'verify';
         // Optionally, auto-send code
-        this.auth.sendVerificationCode(email).subscribe();
+        this.auth.sendVerificationCode(formValue.email).subscribe();
       },
       error: (err) => {
         this.loading.set(false);
@@ -70,10 +100,17 @@ export class AuthFormComponent implements OnInit {
     });
   }
 
-  onSignin(email: string, password: string): void {
+  onSignin(): void {
+    if (this.signinForm.invalid) {
+      this.signinForm.markAllAsTouched();
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
-    this.auth.login({ email, password }).subscribe({
+    const formValue = this.signinForm.value;
+
+    this.auth.login({ email: formValue.email, password: formValue.password }).subscribe({
       next: (res) => {
         this.loading.set(false);
         // Redirect based on user role

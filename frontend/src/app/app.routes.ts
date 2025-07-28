@@ -41,7 +41,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+    children: DASHBOARD_ROUTES
   },
   {
     path: 'auth',

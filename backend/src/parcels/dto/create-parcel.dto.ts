@@ -1,17 +1,17 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateParcelDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  senderId: string;
+  senderId?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  receiverId: string;
+  receiverId?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  categoryId: string;
+  categoryId?: string;
 
   @IsString()
   @IsNotEmpty()

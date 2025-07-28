@@ -53,6 +53,20 @@ export class ParcelsController {
     return this.parcelsService.getReceivedParcels(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('COURIER_AGENT')
+  @Get('assigned')
+  getAssignedParcels(@Request() req: ExpressRequest & { user: { userId: string; role: string } }) {
+    return this.parcelsService.getAssignedParcels(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Get('admin/all')
+  getAllParcels() {
+    return this.parcelsService.getAllParcels();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   getParcelById(@Param('id') id: string, @Request() req: ExpressRequest & { user: { userId: string; role: string } }) {

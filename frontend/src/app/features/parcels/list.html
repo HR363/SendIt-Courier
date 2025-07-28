@@ -71,9 +71,9 @@
     </thead>
     <tbody>
       <ng-container *ngIf="activeTab === 'sent'">
-        <tr *ngFor="let parcel of filteredSentParcels">
+        <tr *ngFor="let parcel of filteredSentParcels$ | async">
         <td>{{ parcel.id }}</td>
-        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> {{ parcel.recipientId }}</td>
+        <td><span class="avatar"><i class="fa-solid fa-user"></i></span> {{ parcel.receiverName }}</td>
         <td>
             <span class="badge" [ngClass]="{
               'delivered': parcel.status === 'DELIVERED',
@@ -92,18 +92,18 @@
               {{ parcel.status }}
             </span>
         </td>
-        <td>{{ parcel.createdAt | date:'yyyy-MM-dd' }}</td>
-        <td>{{ parcel.category }}</td>
-        <td>{{ parcel.senderId }}</td>
-        <td>-</td>
-        <td>-</td>
+        <td>{{ parcel.estimatedDeliveryDate | date:'yyyy-MM-dd' }}</td>
+        <td>{{ parcel.pickupLocation.address }}</td>
+        <td>{{ parcel.destinationLocation.address }}</td>
+        <td>{{ parcel.weight }} kg</td>
+        <td>${{ parcel.price }}</td>
         <td><a [routerLink]="['/dashboard/parcels', parcel.id]" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
         </tr>
       </ng-container>
       <ng-container *ngIf="activeTab === 'toMe'">
-        <tr *ngFor="let parcel of filteredToMeParcels">
+        <tr *ngFor="let parcel of filteredToMeParcels$ | async">
           <td>{{ parcel.id }}</td>
-          <td><span class="avatar"><i class="fa-solid fa-user"></i></span> {{ parcel.receiverName || parcel.recipientId }}</td>
+          <td><span class="avatar"><i class="fa-solid fa-user"></i></span> {{ parcel.senderName }}</td>
           <td>
             <span class="badge" [ngClass]="{
               'delivered': parcel.status === 'Delivered',
@@ -122,11 +122,11 @@
               {{ parcel.status }}
             </span>
           </td>
-          <td>{{ parcel.deliveryDate || parcel.createdAt | date:'yyyy-MM-dd' }}</td>
-          <td>{{ parcel.origin }}</td>
-          <td>{{ parcel.destination }}</td>
-          <td>{{ parcel.weight }}</td>
-          <td>{{ parcel.cost }}</td>
+          <td>{{ parcel.estimatedDeliveryDate | date:'yyyy-MM-dd' }}</td>
+          <td>{{ parcel.pickupLocation.address }}</td>
+          <td>{{ parcel.destinationLocation.address }}</td>
+          <td>{{ parcel.weight }} kg</td>
+          <td>${{ parcel.price }}</td>
           <td><a [routerLink]="['/dashboard/parcels', parcel.id]" class="details-btn-modern"><i class="fa-solid fa-eye"></i> View Details</a></td>
         </tr>
       </ng-container>

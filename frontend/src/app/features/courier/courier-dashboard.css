@@ -248,6 +248,124 @@
 .parcel-action:hover {
   opacity: 0.9;
 }
+.pickup-requests-list {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.pickup-request-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-left: 5px solid #f59e42;
+  position: relative;
+}
+.pickup-request-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.pickup-request-title {
+  color: #f59e42;
+  margin-right: 0.5rem;
+}
+.pickup-request-status {
+  margin-left: auto;
+  padding: 0.2rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pickup-request-status.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+.pickup-request-status.completed {
+  background: #d1fae5;
+  color: #047857;
+}
+.pickup-request-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  font-size: 0.98rem;
+}
+.pickup-request-info {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.pickup-request-label {
+  color: #64748b;
+  font-weight: 500;
+}
+.pickup-request-value {
+  color: #1e293b;
+  font-weight: 400;
+}
+.pickup-request-action {
+  align-self: flex-end;
+  background: #f59e42;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.pickup-request-action:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+.pickup-request-toggle {
+  background: none;
+  border: none;
+  margin-left: 0.5rem;
+  font-size: 1.1rem;
+  color: #f59e42;
+  cursor: pointer;
+  transition: color 0.2s;
+  outline: none;
+}
+.pickup-request-toggle:focus {
+  color: #ea580c;
+}
+.pickup-request-main-info {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+.ml-4 { margin-left: 1.2rem; }
+.pickup-request-details-expand {
+  background: #f8fafc;
+  border-radius: 0.7rem;
+  margin: 0.5rem 0 0.2rem 0;
+  padding: 0.7rem 1rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  animation: fadeInDetails 0.2s;
+}
+@keyframes fadeInDetails {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 @media (max-width: 900px) {
   .dashboard-summary-row { flex-direction: column; gap: 1.2rem; }
   .summary-card { min-width: 0; width: 100%; }

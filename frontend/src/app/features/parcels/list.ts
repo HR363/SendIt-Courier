@@ -1,157 +1,49 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgForOf, NgIf, NgClass, AsyncPipe, DatePipe } from '@angular/common';
-import { ParcelService, Parcel as BackendParcel } from '../../core/services/parcel.service';
-import { Observable } from 'rxjs';
-
-export interface Parcel {
-  id: string;
-  receiverName: string;
-  status: 'Delivered' | 'In Transit' | 'Pending' | 'Cancelled' | 'New Order';
-  deliveryDate: string;
-  origin: string;
-  destination: string;
-  weight: string;
-  cost: string;
-}
+import { ParcelService, Parcel } from '../../core/services/parcel.service';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-list',
   standalone: true,
-imports: [RouterLink, NgForOf, NgIf, NgClass, DatePipe],
+  imports: [RouterLink, NgForOf, NgIf, NgClass, DatePipe, AsyncPipe],
   templateUrl: './list.html',
   styleUrl: './list.css'
 })
-export class List {
-  sentParcels: Parcel[] = [
-    {
-      id: 'PRC-001-A2B',
-      receiverName: 'Alice Johnson',
-      status: 'Delivered',
-      deliveryDate: '2023-11-20',
-      origin: 'London, UK',
-      destination: 'Paris, FR',
-      weight: '2.5 kg',
-      cost: '$25.00',
-    },
-    {
-      id: 'PRC-002-C3D',
-      receiverName: 'Bob Smith',
-      status: 'In Transit',
-      deliveryDate: '2023-11-28',
-      origin: 'Berlin, DE',
-      destination: 'Rome, IT',
-      weight: '5.0 kg',
-      cost: '$40.00',
-    },
-    {
-      id: 'PRC-003-E4F',
-      receiverName: 'Charlie Brown',
-      status: 'Pending',
-      deliveryDate: '2023-12-05',
-      origin: 'Madrid, ES',
-      destination: 'Lisbon, PT',
-      weight: '1.2 kg',
-      cost: '$15.50',
-    },
-    {
-      id: 'PRC-004-G5H',
-      receiverName: 'Diana Prince',
-      status: 'Cancelled',
-      deliveryDate: '2023-11-15',
-      origin: 'New York, US',
-      destination: 'Toronto, CA',
-      weight: '10.0 kg',
-      cost: '$75.00',
-    },
-    {
-      id: 'PRC-005-I6J',
-      receiverName: 'Ethan Hunt',
-      status: 'New Order',
-      deliveryDate: '2023-12-10',
-      origin: 'Tokyo, JP',
-      destination: 'Seoul, KR',
-      weight: '0.8 kg',
-      cost: '$18.75',
-    },
-    {
-      id: 'PRC-006-K7L',
-      receiverName: 'Fiona Gallagher',
-      status: 'Delivered',
-      deliveryDate: '2023-11-22',
-      origin: 'Sydney, AU',
-      destination: 'Auckland, NZ',
-      weight: '3.1 kg',
-      cost: '$30.00',
-    },
-    {
-      id: 'PRC-007-M8N',
-      receiverName: 'George Costanza',
-      status: 'In Transit',
-      deliveryDate: '2023-11-29',
-      origin: 'Vancouver, CA',
-      destination: 'Seattle, US',
-      weight: '6.5 kg',
-      cost: '$55.00',
-    },
-  ];
-  sentParcels$!: Observable<BackendParcel[]>;
-  toMeParcels$!: Observable<BackendParcel[]>;
-  filteredSentParcels: BackendParcel[] = [];
-  filteredToMeParcels: BackendParcel[] = [];
-
-  toMeParcels: Parcel[] = [
-    {
-      id: 'PRC-101-X1Y',
-      receiverName: 'You',
-      status: 'Delivered',
-      deliveryDate: '2023-10-10',
-      origin: 'Paris, FR',
-      destination: 'London, UK',
-      weight: '2.0 kg',
-      cost: '$22.00',
-    },
-    {
-      id: 'PRC-102-Z2W',
-      receiverName: 'You',
-      status: 'In Transit',
-      deliveryDate: '2023-12-01',
-      origin: 'Rome, IT',
-      destination: 'Berlin, DE',
-      weight: '4.0 kg',
-      cost: '$38.00',
-    },
-    {
-      id: 'PRC-103-V3U',
-      receiverName: 'You',
-      status: 'Pending',
-      deliveryDate: '2023-12-12',
-      origin: 'Lisbon, PT',
-      destination: 'Madrid, ES',
-      weight: '1.5 kg',
-      cost: '$16.00',
-    },
-  ];
+export class List implements OnInit {
+  sentParcels$!: Observable<Parcel[]>;
+  toMeParcels$!: Observable<Parcel[]>;
+  filteredSentParcels$!: Observable<Parcel[]>;
+  filteredToMeParcels$!: Observable<Parcel[]>;
 
   activeTab: 'sent' | 'toMe' = 'sent';
   statusFilter: string = 'All';
   currentPage: number = 1;
   pageSize: number = 7;
 
-  get filteredParcels(): Parcel[] {
-    const parcels = this.activeTab === 'sent' ? this.sentParcels : this.toMeParcels;
+  constructor(private parcelService: ParcelService) {}
+
+  ngOnInit() {
+    this.loadParcels();
+  }
+
+  loadParcels() {
+    this.sentParcels$ = this.parcelService.getSentParcels();
+    this.toMeParcels$ = this.parcelService.getReceivedParcels();
+
+    this.filteredSentParcels$ = this.sentParcels$.pipe(
+      map(parcels => this.filterParcels(parcels))
+    );
+
+    this.filteredToMeParcels$ = this.toMeParcels$.pipe(
+      map(parcels => this.filterParcels(parcels))
+    );
+  }
+
+  filterParcels(parcels: Parcel[]): Parcel[] {
     if (this.statusFilter === 'All') return parcels;
     return parcels.filter(p => p.status === this.statusFilter);
-  }
-
-  // Filtering and pagination logic should be updated to work with Observables if needed
-  get paginatedParcels(): Parcel[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredParcels.slice(start, start + this.pageSize);
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.filteredParcels.length / this.pageSize) || 1;
   }
 
   switchTab(tab: 'sent' | 'toMe') {
@@ -159,30 +51,16 @@ export class List {
     this.currentPage = 1;
   }
 
-
-
-  goToPage(page: number) {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-  }
-  
-  constructor(private parcelService: ParcelService) {
-    this.sentParcels$ = this.parcelService.getParcels();
-    this.toMeParcels$ = this.parcelService.getParcels(); // Adjust as needed for real API (e.g., filter by recipient)
-    this.sentParcels$.subscribe(parcels => this.filteredSentParcels = parcels);
-    this.toMeParcels$.subscribe(parcels => this.filteredToMeParcels = parcels);
-  }
-
-  filterParcels(parcels: BackendParcel[]): BackendParcel[] {
-    if (this.statusFilter === 'All') return parcels;
-    return parcels.filter(p => p.status === this.statusFilter);
-  }
-
   setStatusFilter(event: Event) {
     const value = (event.target as HTMLSelectElement)?.value || 'All';
     this.statusFilter = value;
-    this.sentParcels$.subscribe(parcels => this.filteredSentParcels = this.filterParcels(parcels));
-    this.toMeParcels$.subscribe(parcels => this.filteredToMeParcels = this.filterParcels(parcels));
+    this.loadParcels(); // Reload with new filter
     this.currentPage = 1;
+  }
+
+  goToPage(page: number) {
+    // Note: Pagination logic would need to be implemented on the backend
+    // For now, this is a placeholder
+    this.currentPage = page;
   }
 }

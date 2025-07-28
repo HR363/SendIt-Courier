@@ -3,11 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../core/services/toast.service';
+import { ParcelService } from '../../core/services/parcel.service';
+import { ToastComponent } from './toast.component';
 
 @Component({
   selector: 'app-courier-create-parcel',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './courier-create-parcel.html',
   styleUrls: ['./courier-create-parcel.css']
 })
@@ -18,7 +21,9 @@ export class CourierCreateParcel implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    private parcelService: ParcelService
   ) {}
 
   ngOnInit(): void {
@@ -41,13 +46,39 @@ export class CourierCreateParcel implements OnInit {
     if (this.parcelForm.invalid) {
       return;
     }
+
     this.isSubmitting = true;
-    // Simulate API call
-    setTimeout(() => {
-      this.isSubmitting = false;
-      alert('Parcel created successfully!');
-      this.router.navigate(['/courier/parcels']);
-    }, 1200);
+    const form = this.parcelForm.value;
+    
+    // Build payload for backend
+    const payload = {
+      senderName: form.senderName,
+      senderPhone: form.senderName, // Using sender name as phone for now
+      senderEmail: form.senderName + '@example.com', // Generate email from name
+      receiverName: form.receiverName,
+      receiverPhone: form.receiverPhone,
+      receiverEmail: form.receiverEmail,
+      pickupLocation: JSON.stringify({ address: form.pickupAddress }),
+      destinationLocation: JSON.stringify({ address: form.destinationAddress }),
+      weight: form.weight,
+      description: form.description,
+      status: form.status,
+      estimatedDeliveryDate: form.pickupDate ? new Date(form.pickupDate).toISOString() : new Date().toISOString(),
+      price: 25.5 // You may want to calculate this based on weight/category
+    };
+
+    this.parcelService.createParcel(payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.toastService.show('Parcel created successfully!', 'success');
+        this.router.navigate(['/courier/parcels']);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.toastService.show('Failed to create parcel', 'error');
+        console.error('Parcel creation error:', err);
+      }
+    });
   }
 
   cancel() {

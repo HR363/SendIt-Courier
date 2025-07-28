@@ -5,10 +5,8 @@
       <select class="parcels-filter" [(ngModel)]="selectedStatus">
         <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
       </select>
-      <select class="parcels-filter" [(ngModel)]="selectedZone">
-        <option *ngFor="let zone of zones" [value]="zone">{{ zone }}</option>
-      </select>
-      <button class="clear-filters-btn" (click)="clearFilters()"><i class="fa-solid fa-xmark"></i> Clear Filters</button>
+      <input type="text" class="parcels-filter" placeholder="Search parcels..." [(ngModel)]="search" (ngModelChange)="onSearchChange()">
+      <button type="button" class="clear-filters-btn" (click)="search = ''; onSearchChange()"><i class="fa-solid fa-xmark"></i> Clear Filters</button>
     </div>
     <div class="parcels-table-wrapper">
       <table class="parcels-table improved">
@@ -23,31 +21,32 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let parcel of paginatedParcels">
+          <tr *ngFor="let parcel of filteredParcels$ | async">
             <td>{{ parcel.id }}</td>
-            <td>{{ parcel.sender }}</td>
-            <td>{{ parcel.receiver }}</td>
+            <td>{{ parcel.senderName }}</td>
+            <td>{{ parcel.receiverName }}</td>
             <td>
               <div class="status-pill">
-                <span class="status-badge" [ngClass]="getStatusClass(parcel.status)">
+                <span class="status-badge" [ngClass]="parcel.status.toLowerCase()">
                   <i class="fa-solid" [ngClass]="{
-                    'fa-truck-fast': parcel.status === 'In Transit',
-                    'fa-circle-check': parcel.status === 'Delivered',
-                    'fa-clock': parcel.status === 'Pending',
-                    'fa-pause': parcel.status === 'On Hold',
-                    'fa-xmark': parcel.status === 'Cancelled'
+                    'fa-truck-fast': parcel.status === 'IN_TRANSIT',
+                    'fa-circle-check': parcel.status === 'DELIVERED',
+                    'fa-clock': parcel.status === 'PENDING',
+                    'fa-pause': parcel.status === 'ON_HOLD',
+                    'fa-xmark': parcel.status === 'CANCELLED'
                   }"></i> {{ parcel.status }}
                 </span>
-                <select class="status-dropdown improved" [ngModel]="parcel.status" (ngModelChange)="setStatus(parcel, $event)">
-                  <option value="In Transit">In Transit</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Pending">Pending</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Cancelled">Cancelled</option>
+                <select class="status-dropdown improved" [ngModel]="parcel.status" (ngModelChange)="updateStatus(parcel, $event)">
+                  <option value="PENDING">Pending</option>
+                  <option value="PICKED_UP">Picked Up</option>
+                  <option value="IN_TRANSIT">In Transit</option>
+                  <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
                 </select>
               </div>
             </td>
-            <td>{{ parcel.lastUpdate }}</td>
+            <td>{{ parcel.updatedAt | date:'yyyy-MM-dd HH:mm' }}</td>
             <td>
               <button class="action-icon" (click)="viewParcel(parcel)"><i class="fa-solid fa-eye"></i></button>
               <button class="action-icon"><i class="fa-solid fa-pen"></i></button>
@@ -57,14 +56,7 @@
       </table>
     </div>
     <div class="parcels-pagination">
-      <span>Show {{ (page - 1) * pageSize + 1 }} to {{ min(page * pageSize, filteredParcels.length) }} of {{ filteredParcels.length }} results</span>
-      <div class="pagination-controls">
-        <button (click)="page = max(1, page - 1)" [disabled]="page === 1">&lt; Previous</button>
-        <span *ngFor="let p of [].constructor(totalPages); let i = index">
-          <button [class.active]="page === i + 1" (click)="page = i + 1">{{ i + 1 }}</button>
-        </span>
-        <button (click)="page = min(totalPages, page + 1)" [disabled]="page === totalPages">Next &gt;</button>
-      </div>
+      <span>Showing all results</span>
     </div>
   </div>
 </div>

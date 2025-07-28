@@ -9,6 +9,16 @@ import { Request as ExpressRequest } from 'express';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Post('/profile-photo')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  async uploadProfilePhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: ExpressRequest & { user: { userId: string } },
+  ) {
+    return this.uploadService.uploadProfilePhoto(file, req.user.userId);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/parcels/:id/delivery-image')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))

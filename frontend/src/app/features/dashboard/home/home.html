@@ -33,14 +33,14 @@
 
   <!-- Shipping Steps Illustration Section -->
   <section class="shipping-steps-section">
-    <h2 class="shipping-steps-title">Your Parcel’s Journey, <span class='highlight-modern'>Step by Step</span></h2>
+    <h2 class="shipping-steps-title">Your Parcel's Journey, <span class='highlight-modern'>Step by Step</span></h2>
     <div class="shipping-steps-timeline">
       <!-- Step 1 -->
       <div class="shipping-step left">
         <div class="step-img"><img src="/assets/drop_parcel.png" alt="Drop Parcel" /></div>
         <div class="step-desc">
           <h3>Drop Off at Our Office</h3>
-          <p>Bring your parcel to the nearest SendIt office and let our friendly staff handle the rest. We’ll get your delivery started in no time!</p>
+          <p>Bring your parcel to the nearest SendIt office and let our friendly staff handle the rest. We'll get your delivery started in no time!</p>
         </div>
       </div>
       <div class="wavy-line left-arrow"></div>
@@ -49,7 +49,7 @@
         <div class="step-img"><img src="/assets/request_pickup.png" alt="Request Pickup" /></div>
         <div class="step-desc">
           <h3>Request a Pickup</h3>
-          <p>Can’t make it to us? Request a pickup and our courier will collect your parcel right from your doorstep, hassle-free.</p>
+          <p>Can't make it to us? Request a pickup and our courier will collect your parcel right from your doorstep, hassle-free.</p>
         </div>
       </div>
       <div class="wavy-line right-arrow"></div>
@@ -58,7 +58,7 @@
         <div class="step-img"><img src="/assets/track_parcel.png" alt="Track Parcel" /></div>
         <div class="step-desc">
           <h3>Track While In Transit</h3>
-          <p>Follow your parcel’s journey in real-time with our easy-to-use tracking system. Stay updated every step of the way.</p>
+          <p>Follow your parcel's journey in real-time with our easy-to-use tracking system. Stay updated every step of the way.</p>
         </div>
       </div>
       <div class="wavy-line left-arrow"></div>
@@ -93,32 +93,32 @@
     <button class="pickup-modal-close" (click)="closePickupModal()" aria-label="Close">&times;</button>
     <ng-container *ngIf="!pickupSuccess(); else pickupSuccessBlock">
       <h2 class="pickup-modal-title">Request a Pickup</h2>
-      <form (submit)="$event.preventDefault(); submitPickupRequest()" class="pickup-form">
+      <form [formGroup]="pickupFormGroup" (ngSubmit)="submitPickupRequest()" class="pickup-form">
         <div class="pickup-form-group">
           <label>Sender Name</label>
-          <input type="text" [(ngModel)]="pickupForm().senderName" name="senderName" required />
+          <input type="text" formControlName="senderName" required />
         </div>
         <div class="pickup-form-group">
           <label>Phone Number</label>
-          <input type="tel" [(ngModel)]="pickupForm().senderPhone" name="senderPhone" required />
+          <input type="tel" formControlName="senderPhone" required />
         </div>
         <div class="pickup-form-group">
           <label>Pickup Address</label>
-          <input type="text" [(ngModel)]="pickupForm().pickupAddress" name="pickupAddress" required />
+          <input type="text" formControlName="pickupAddress" required />
         </div>
         <div class="pickup-form-group">
           <label>Parcel Description</label>
-          <textarea [(ngModel)]="pickupForm().parcelDescription" name="parcelDescription" rows="2" required></textarea>
+          <textarea formControlName="parcelDescription" rows="2" required></textarea>
         </div>
         <div class="pickup-form-group">
           <label>Pickup Date</label>
-          <input type="date" [(ngModel)]="pickupForm().pickupDate" name="pickupDate" required />
+          <input type="date" formControlName="pickupDate" required />
         </div>
         <div class="pickup-form-group">
           <label>Special Instructions <span class="optional">(Optional)</span></label>
-          <textarea [(ngModel)]="pickupForm().specialInstructions" name="specialInstructions" rows="2"></textarea>
+          <textarea formControlName="specialInstructions" rows="2"></textarea>
         </div>
-        <button type="submit" class="pickup-submit-btn">Request Pickup</button>
+        <button type="submit" class="pickup-submit-btn" [disabled]="pickupFormGroup.invalid">Request Pickup</button>
       </form>
     </ng-container>
     <ng-template #pickupSuccessBlock>

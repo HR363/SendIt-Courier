@@ -7,6 +7,7 @@ export class UserProfileResponseDto {
   lastName: string;
   phone: string;
   role: string;
+  profilePhoto?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -30,4 +31,8 @@ export class UpdateUserProfileDto {
   @IsOptional()
   @IsEmail()
   email?: string;
-} 
+
+  @IsOptional()
+  @IsString()
+  profilePhoto?: string;
+}

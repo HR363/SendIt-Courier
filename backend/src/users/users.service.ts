@@ -13,8 +13,8 @@ export class UsersService {
     });
     if (!user) throw new NotFoundException('User not found');
     // Map to DTO
-    const { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt } = user;
-    return { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt };
+    const { id, email, firstName, lastName, phone, role, profilePhoto, isActive, createdAt, updatedAt } = user;
+    return { id, email, firstName, lastName, phone, role, profilePhoto: profilePhoto || undefined, isActive, createdAt, updatedAt };
   }
 
   async updateProfile(userId: string, dto: UpdateUserProfileDto): Promise<UserProfileResponseDto> {
@@ -22,14 +22,14 @@ export class UsersService {
       where: { id: userId, isActive: true },
       data: { ...dto },
     });
-    const { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt } = user;
-    return { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt };
+    const { id, email, firstName, lastName, phone, role, profilePhoto, isActive, createdAt, updatedAt } = user;
+    return { id, email, firstName, lastName, phone, role, profilePhoto: profilePhoto || undefined, isActive, createdAt, updatedAt };
   }
 
   async listUsers(): Promise<UserProfileResponseDto[]> {
     const users = await this.prisma.user.findMany({ where: { }, orderBy: { createdAt: 'desc' } });
-    return users.map(({ id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt }) => ({
-      id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt
+    return users.map(({ id, email, firstName, lastName, phone, role, profilePhoto, isActive, createdAt, updatedAt }) => ({
+      id, email, firstName, lastName, phone, role, profilePhoto: profilePhoto || undefined, isActive, createdAt, updatedAt
     }));
   }
 
