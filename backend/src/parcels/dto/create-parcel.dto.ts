@@ -63,6 +63,11 @@ export class CreateParcelDto {
   @IsDateString()
   actualDeliveryDate?: string;
 
+  @IsOptional()
+  @IsString()
+  serviceType?: 'Standard' | 'Express' | 'Overnight';
+
+  @IsOptional()
   @IsNumber()
-  price: number;
+  price?: number;
 } 

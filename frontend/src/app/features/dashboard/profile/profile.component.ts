@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService, UserProfile } from './user.service';
 import { UploadService } from '../../../core/services/upload.service';
-import { Observable } from 'rxjs';
+import { ParcelService, Parcel } from '../../../core/services/parcel.service';
+import { Observable, combineLatest, map } from 'rxjs';
 import { NgIf, NgFor, NgClass, AsyncPipe } from '@angular/common';
 
 interface PaymentMethod {
@@ -15,7 +16,7 @@ interface Shipment {
   id: string;
   title: string;
   trackingId: string;
-  status: 'Delivered' | 'In Transit' | 'Pending';
+  status: string;
   date: string;
 }
 
@@ -30,25 +31,55 @@ interface Shipment {
 export class ProfileComponent {
   user$!: Observable<UserProfile | null>;
   editMode = false;
+  changePasswordMode = false;
   private _editForm: Partial<UserProfile> = {};
   private _photoPreview: string | null = null;
+  private _changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
   // Payment, shipments, and notifications will be loaded from backend in future
   _paymentEditMode = false;
   _newPaymentForm = { type: 'Visa', number: '', expires: '', cvv: '' };
   _paymentMethods: any[] = [];
-  _shipments: any[] = [];
+  _shipments: Shipment[] = [];
   _notifications = { sms: false, email: false };
   showAllShipmentsFlag = false;
 
   constructor(
     private userService: UserService,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private parcelService: ParcelService
   ) {
     this.user$ = this.userService.getProfile();
+    this.loadRecentShipments();
   }
 
-  // Template expects methods for these properties
+  loadRecentShipments() {
+    // Load both sent and received parcels
+    combineLatest([
+      this.parcelService.getSentParcels(),
+      this.parcelService.getReceivedParcels()
+    ]).subscribe({
+      next: ([sentParcels, receivedParcels]) => {
+        const allParcels = [...sentParcels, ...receivedParcels];
+        this._shipments = allParcels
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5)
+          .map(parcel => ({
+            id: parcel.id,
+            title: `${parcel.senderName} → ${parcel.receiverName}`,
+            trackingId: parcel.trackingNumber,
+            status: parcel.status.replace('_', ' '),
+            date: new Date(parcel.createdAt).toLocaleDateString()
+          }));
+      },
+      error: (error) => {
+        console.error('Error loading shipments:', error);
+        this._shipments = [];
+      }
+    });
+  }
+
+  // Getters for template
   editForm() { return this._editForm; }
   photoPreview() { return this._photoPreview; }
   paymentEditMode() { return this._paymentEditMode; }
@@ -56,19 +87,26 @@ export class ProfileComponent {
   paymentMethods() { return this._paymentMethods; }
   shipments() { return this._shipments; }
   notifications() { return this._notifications; }
+  showAllShipments() { return this.showAllShipmentsFlag; }
 
   openEditProfile(user?: UserProfile) {
+    console.log('openEditProfile called with user:', user);
     if (user) {
       this._editForm = { name: user.name, email: user.email, phone: user.phone };
       this._photoPreview = user.photo || null;
     }
     this.editMode = true;
+    console.log('editMode set to:', this.editMode);
   }
+
   closeEditProfile() {
+    console.log('closeEditProfile called');
     this.editMode = false;
     this._photoPreview = null;
   }
+
   saveProfile() {
+    console.log('saveProfile called with form data:', this._editForm);
     // Extract only the fields that the backend supports
     const { name, email, phone } = this._editForm;
 
@@ -80,30 +118,49 @@ export class ProfileComponent {
       updateData.lastName = nameParts.slice(1).join(' ') || '';
     }
 
-    this.userService.updateProfile(updateData).subscribe(() => {
-      this.editMode = false;
-      this._photoPreview = null;
-      // No need to manually reload user; Observable will update if service emits new value
+    console.log('Sending update data to backend:', updateData);
+
+    this.userService.updateProfile(updateData).subscribe({
+      next: () => {
+        console.log('Profile updated successfully');
+        this.editMode = false;
+        this._photoPreview = null;
+        // No need to manually reload user; Observable will update if service emits new value
+      },
+      error: (error) => {
+        console.error('Error updating profile:', error);
+        console.error('Error details:', error.error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        alert('Failed to update profile. Please try again.');
+      }
     });
   }
-  onEditInputChange(field: 'name' | 'email' | 'phone', value: string) {
+
+  onEditInputChange(field: string, value: string) {
     this._editForm = { ...this._editForm, [field]: value };
   }
+
   onPhotoSelected(event: Event) {
+    console.log('onPhotoSelected called');
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      console.log('File selected:', file.name, file.size, file.type);
 
       // Show preview immediately
       const reader = new FileReader();
       reader.onload = () => {
         this._photoPreview = reader.result as string;
+        console.log('Photo preview set');
       };
       reader.readAsDataURL(file);
 
       // Upload to Cloudinary
+      console.log('Uploading to Cloudinary...');
       this.uploadService.uploadProfilePhoto(file).subscribe({
         next: (response) => {
+          console.log('Upload successful:', response);
           // Update the user's profile with the new photo URL
           this.userService.updateProfile({ profilePhoto: response.url }).subscribe({
             next: () => {
@@ -120,48 +177,90 @@ export class ProfileComponent {
           this._photoPreview = null;
         }
       });
+    } else {
+      console.log('No file selected');
     }
   }
 
-  // Shipments view toggle
-  toggleShipmentsView() {
-    this.showAllShipmentsFlag = !this.showAllShipmentsFlag;
-  }
-  showAllShipments() {
-    return this.showAllShipmentsFlag;
-  }
-  getDisplayedShipments() {
-    return this.showAllShipmentsFlag ? this._shipments : this._shipments.slice(0, 3);
+  openChangePassword() {
+    this.changePasswordMode = true;
+    this._changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
   }
 
-  // Payment methods
+  closeChangePassword() {
+    this.changePasswordMode = false;
+    this._changePasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  }
+
+  onPasswordInputChange(field: string, value: string) {
+    this._changePasswordForm = { ...this._changePasswordForm, [field]: value };
+  }
+
+  changePassword() {
+    const { currentPassword, newPassword, confirmPassword } = this._changePasswordForm;
+
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('New password must be at least 6 characters long');
+      return;
+    }
+
+    this.userService.changePassword({ currentPassword, newPassword }).subscribe({
+      next: (response: { message: string }) => {
+        alert('Password changed successfully');
+        this.closeChangePassword();
+      },
+      error: (error: any) => {
+        console.error('Error changing password:', error);
+        if (error.error?.message) {
+          alert(error.error.message);
+        } else {
+          alert('Failed to change password. Please try again.');
+        }
+      }
+    });
+  }
+
+  // Payment methods (placeholder functionality)
   openAddPayment() {
     this._paymentEditMode = true;
   }
+
   closeAddPayment() {
     this._paymentEditMode = false;
     this._newPaymentForm = { type: 'Visa', number: '', expires: '', cvv: '' };
   }
+
   addPaymentMethod() {
-    // Dummy add, replace with backend integration
-    const newMethod = {
-      id: Math.random().toString(36).substring(2),
-      type: this._newPaymentForm.type,
-      last4: this._newPaymentForm.number.slice(-4),
-      expires: this._newPaymentForm.expires
-    };
-    this._paymentMethods.push(newMethod);
+    // Placeholder - would integrate with payment processor
+    console.log('Adding payment method:', this._newPaymentForm);
     this.closeAddPayment();
   }
+
   removePaymentMethod(id: string) {
-    this._paymentMethods = this._paymentMethods.filter(m => m.id !== id);
-  }
-  onPaymentInputChange(field: 'type' | 'number' | 'expires' | 'cvv', value: string) {
-    this._newPaymentForm = { ...this._newPaymentForm, [field]: value };
+    // Placeholder - would integrate with payment processor
+    console.log('Removing payment method:', id);
   }
 
-  // Notifications
+  toggleShipmentsView() {
+    this.showAllShipmentsFlag = !this.showAllShipmentsFlag;
+  }
+
+  getDisplayedShipments() {
+    return this.showAllShipmentsFlag ? this._shipments : this._shipments.slice(0, 3);
+  }
+
   toggleNotification(type: 'sms' | 'email') {
     this._notifications[type] = !this._notifications[type];
+    // Placeholder - would save to backend
+    console.log('Notification preference changed:', type, this._notifications[type]);
+  }
+
+  onPaymentInputChange(field: string, value: string) {
+    this._newPaymentForm = { ...this._newPaymentForm, [field]: value };
   }
 }

@@ -3,6 +3,7 @@ import { PrismaService } from './database/prisma.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailService } from './mail.service';
+import { PricingService } from './pricing.service';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { MailService } from './mail.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [PrismaService, MailService],
-  exports: [PrismaService, MailerModule, MailService],
+  providers: [PrismaService, MailService, PricingService],
+  exports: [PrismaService, MailerModule, MailService, PricingService],
 })
 export class CommonModule {} 

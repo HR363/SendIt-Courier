@@ -89,11 +89,18 @@ export class AuthService {
         isEmailVerified: true,
       },
     });
-    // TODO: Send verification email here
+    
+    // Send verification email (will not throw error if it fails)
     await this.mailService.sendVerificationEmail(user.email, code);
-    // Send welcome email
+    
+    // Send welcome email (will not throw error if it fails)
     await this.mailService.sendWelcomeEmail(user.email, user.firstName);
-    return user;
+    
+    return {
+      ...user,
+      message: 'Registration successful. Please check your email for verification code.',
+      note: 'If you don\'t receive the email, check the server logs for the verification code during development.'
+    };
   }
 
   async verifyEmail(dto: VerifyEmailDto) {
@@ -128,8 +135,12 @@ export class AuthService {
         emailVerificationExpiry: expiry,
       },
     });
+    // Send verification email (will not throw error if it fails)
     await this.mailService.sendVerificationEmail(user.email, code);
-    return { message: 'Verification code resent' };
+    return { 
+      message: 'Verification code resent. Please check your email.',
+      note: 'If you don\'t receive the email, check the server logs for the verification code during development.'
+    };
   }
 
   async forgotPassword({ email }: ForgotPasswordDto): Promise<void> {
@@ -141,6 +152,7 @@ export class AuthService {
       where: { id: user.id },
       data: { passwordResetCode: code, passwordResetExpiry: expiry },
     });
+    // Send password reset email (will not throw error if it fails)
     await this.mailService.sendPasswordResetEmail(email, code);
   }
 

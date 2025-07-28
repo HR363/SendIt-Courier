@@ -4,6 +4,7 @@ import { PrismaService } from '../common/database/prisma.service';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class UploadService {
@@ -54,19 +55,79 @@ export class UploadService {
   }
 
   async uploadProfilePhoto(file: Express.Multer.File, userId: string) {
-    if (!file || !file.path) throw new BadRequestException('No file uploaded');
+    console.log('uploadProfilePhoto called with:', { file: file?.originalname, userId });
+    
+    if (!file) {
+      console.error('No file provided');
+      throw new BadRequestException('No file uploaded');
+    }
+
+    console.log('File details:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      path: file.path
+    });
 
     // Verify user exists
     const user = await this.prisma.user.findUnique({ where: { id: userId, isActive: true } });
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) {
+      console.error('User not found:', userId);
+      throw new BadRequestException('User not found');
+    }
 
-    // Update user's profile photo
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { profilePhoto: file.path },
-    });
+    console.log('User found:', user.email);
 
-    return { url: file.path };
+    // Check file type
+    if (!file.mimetype.startsWith('image/')) {
+      console.error('Invalid file type:', file.mimetype);
+      throw new BadRequestException('Only image files are allowed');
+    }
+
+    try {
+      console.log('Uploading to Cloudinary...');
+      // Upload to Cloudinary manually
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: 'sendit/profile-photos',
+        public_id: `${Date.now()}-${file.originalname}`,
+        resource_type: 'image',
+      });
+
+      console.log('Cloudinary upload successful:', result.secure_url);
+
+      // Update user's profile photo
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { profilePhoto: result.secure_url },
+      });
+
+      console.log('User profile photo updated successfully');
+
+      // Clean up temporary file
+      try {
+        await unlink(file.path);
+        console.log('Temporary file cleaned up');
+      } catch (cleanupError) {
+        console.error('Failed to clean up temporary file:', cleanupError);
+        // Don't throw error for cleanup failure
+      }
+
+      return { url: result.secure_url };
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      
+      // Clean up temporary file on error
+      try {
+        if (file.path) {
+          await unlink(file.path);
+          console.log('Temporary file cleaned up after error');
+        }
+      } catch (cleanupError) {
+        console.error('Failed to clean up temporary file after error:', cleanupError);
+      }
+      
+      throw new BadRequestException('Failed to upload image');
+    }
   }
 
   async uploadDeliveryImage(parcelId: string, file: Express.Multer.File, user: { userId: string; role: string }) {

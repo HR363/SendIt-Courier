@@ -22,7 +22,13 @@ export interface UpdateUserProfile {
 }
 
 export interface UpdateUserStatus {
-  isActive: boolean;
+  isActive?: boolean;
+  role?: 'USER' | 'ADMIN' | 'COURIER_AGENT';
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +45,10 @@ export class UserService {
     return this.http.put<UserProfile>(`${this.apiUrl}/profile`, data);
   }
 
+  changePassword(data: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/change-password`, data);
+  }
+
   // Admin endpoints
   listUsers(): Observable<UserProfile[]> {
     return this.http.get<UserProfile[]>(`${this.apiUrl}/admin/users`);
@@ -46,5 +56,9 @@ export class UserService {
 
   updateUserStatus(userId: string, data: UpdateUserStatus): Observable<UserProfile> {
     return this.http.put<UserProfile>(`${this.apiUrl}/admin/users/${userId}/status`, data);
+  }
+
+  updateUserRole(userId: string, role: 'USER' | 'ADMIN' | 'COURIER_AGENT'): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/admin/users/${userId}/status`, { role });
   }
 }

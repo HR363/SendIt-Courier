@@ -10,6 +10,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PickupRequestModule } from './pickup-request/pickup-request.module';
+import { PricingModule } from './pricing/pricing.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PickupRequestModule } from './pickup-request/pickup-request.module';
     ReviewsModule,
     MetricsModule,
     PickupRequestModule,
+    PricingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

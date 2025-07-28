@@ -201,28 +201,37 @@ body, .dashboard-main-bg, .dashboard-content-bg {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.38em 1.1em;
-  border-radius: 1em;
-  font-size: 1em;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
-  box-shadow: 0 2px 8px #e5e7eb80;
+  text-transform: capitalize;
 }
+
 .badge.delivered {
   background: #10b981;
 }
+
 .badge.in-transit {
   background: #2563eb;
 }
+
 .badge.pending {
-  background: #f59e42;
+  background: #f59e0b;
 }
+
 .badge.cancelled {
   background: #ef4444;
 }
-.badge.new-order {
-  background: #fd7e14;
+
+.badge.picked-up {
+  background: #8b5cf6;
+}
+
+.badge.out-for-delivery {
+  background: #06b6d4;
 }
 
 /* Avatar Modern */

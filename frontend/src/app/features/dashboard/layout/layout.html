@@ -13,8 +13,16 @@
   </div>
   <div class="flex items-center gap-4 relative">
     <div class="group relative">
-      <div tabindex="0" class="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center text-xl text-orange-700 font-bold cursor-pointer shadow transition hover:scale-105 focus:outline-none">
-        J
+      <div tabindex="0" class="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center text-xl text-orange-700 font-bold cursor-pointer shadow transition hover:scale-105 focus:outline-none overflow-hidden">
+        <ng-container *ngIf="(user$ | async) as user; else defaultAvatar">
+          <img *ngIf="user.photo; else userInitial" [src]="user.photo" [alt]="user.name" class="w-full h-full object-cover" />
+          <ng-template #userInitial>
+            {{ user.name?.[0] || 'U' }}
+          </ng-template>
+        </ng-container>
+        <ng-template #defaultAvatar>
+          U
+        </ng-template>
       </div>
       <div class="profile-dropdown absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-orange-100 py-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-all z-50">
         <a routerLink="/dashboard/profile" class="block px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition">Profile</a>

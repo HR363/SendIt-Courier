@@ -1,17 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/database/prisma.service';
 import { CreateParcelDto } from './dto/create-parcel.dto';
 import { UpdateParcelDto } from './dto/update-parcel.dto';
-import { AssignCourierDto } from './dto/assign-courier.dto';
 import { UpdateParcelStatusDto } from './dto/update-parcel-status.dto';
-import { ForbiddenException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { NotFoundException } from '@nestjs/common';
 import { MailService } from '../common/mail.service';
+import { PricingService } from '../common/pricing.service';
 
 @Injectable()
 export class ParcelsService {
-  constructor(private readonly prisma: PrismaService, private readonly mailService: MailService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+    private readonly pricingService: PricingService,
+  ) {}
 
   async createParcel(dto: CreateParcelDto, user: { userId: string; role: string }) {
     if (!['ADMIN', 'COURIER_AGENT'].includes(user.role)) {
@@ -34,6 +36,17 @@ export class ParcelsService {
       estimatedDeliveryDate = new Date(estimatedDeliveryDate + 'T00:00:00.000Z').toISOString();
     }
 
+    // Calculate dynamic pricing
+    const pricingRequest = {
+      categoryId: dto.categoryId || await this.getDefaultCategoryId(),
+      weight: Number(dto.weight),
+      pickupLocation: dto.pickupLocation,
+      destinationLocation: dto.destinationLocation,
+      serviceType: dto.serviceType || 'Standard'
+    };
+
+    const pricing = await this.pricingService.calculatePricing(pricingRequest);
+
     const data: any = {
       senderName: dto.senderName,
       senderPhone: dto.senderPhone,
@@ -47,7 +60,7 @@ export class ParcelsService {
       description: dto.description || '',
       status: dto.status,
       estimatedDeliveryDate: estimatedDeliveryDate,
-      price: Number(dto.price),
+      price: pricing.totalPrice,
       trackingNumber,
       isActive: true,
     };
@@ -73,28 +86,8 @@ export class ParcelsService {
       data.category = { connect: { id: dto.categoryId } };
     } else {
       // Use a default category if none is provided
-      // First, try to find a default category
-      const defaultCategory = await this.prisma.parcelCategory.findFirst({
-        where: { isActive: true }
-      });
-      
-      if (defaultCategory) {
-        data.category = { connect: { id: defaultCategory.id } };
-      } else {
-        // If no categories exist, create a default one
-        const newCategory = await this.prisma.parcelCategory.create({
-          data: {
-            name: 'General',
-            description: 'General parcel category',
-            minWeight: 0,
-            maxWeight: 100,
-            pricePerKg: 5,
-            basePrice: 10,
-            isActive: true
-          }
-        });
-        data.category = { connect: { id: newCategory.id } };
-      }
+      const defaultCategory = await this.getDefaultCategory();
+      data.category = { connect: { id: defaultCategory.id } };
     }
     
     const parcel = await this.prisma.parcel.create({ data });
@@ -116,7 +109,7 @@ export class ParcelsService {
     return updated;
   }
 
-  async assignCourier(id: string, dto: AssignCourierDto) {
+  async assignCourier(id: string, dto: any) { // Assuming AssignCourierDto is no longer needed or changed
     // Only admin can assign
     // (Controller already guards, but double-check here)
     const parcel = await this.prisma.parcel.findUnique({ where: { id } });
@@ -170,15 +163,33 @@ export class ParcelsService {
   }
 
   async getSentParcels(userId: string) {
+    // First get the user to get their email
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    
     return this.prisma.parcel.findMany({
-      where: { senderId: userId, isActive: true },
+      where: { 
+        senderEmail: user.email, 
+        isActive: true 
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async getReceivedParcels(userId: string) {
+    // First get the user to get their email
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    
     return this.prisma.parcel.findMany({
-      where: { receiverId: userId, isActive: true },
+      where: { 
+        receiverEmail: user.email, 
+        isActive: true 
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -237,5 +248,34 @@ export class ParcelsService {
       where: { parcelId: id },
       orderBy: { createdAt: 'asc' },
     });
+  }
+
+  private async getDefaultCategoryId(): Promise<string> {
+    const defaultCategory = await this.getDefaultCategory();
+    return defaultCategory.id;
+  }
+
+  private async getDefaultCategory() {
+    // First, try to find a default category
+    const defaultCategory = await this.prisma.parcelCategory.findFirst({
+      where: { isActive: true }
+    });
+    
+    if (defaultCategory) {
+      return defaultCategory;
+    } else {
+      // If no categories exist, create a default one
+      return await this.prisma.parcelCategory.create({
+        data: {
+          name: 'General',
+          description: 'General parcel category',
+          minWeight: 0,
+          maxWeight: 100,
+          pricePerKg: 5,
+          basePrice: 10,
+          isActive: true
+        }
+      });
+    }
   }
 }

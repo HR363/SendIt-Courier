@@ -13,6 +13,7 @@ export interface Location {
 
 export interface Parcel {
   id: string;
+  trackingNumber: string;
   senderId: string;
   receiverId: string;
   categoryId: string;
@@ -62,7 +63,8 @@ export interface CreateParcel {
   status: string;
   estimatedDeliveryDate: string;
   actualDeliveryDate?: string;
-  price: number;
+  price?: number; // Made optional since it's calculated dynamically
+  serviceType?: 'Standard' | 'Express' | 'Overnight';
 }
 
 export interface UpdateParcel {

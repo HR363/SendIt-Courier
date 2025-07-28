@@ -71,10 +71,23 @@ export class UserService {
   }
 
   updateProfile(data: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http.put<any>(this.apiUrl, data).pipe(
+    // Prepare the data for backend - only send fields that backend expects
+    const backendData: any = {};
+    
+    if (data.firstName !== undefined) backendData.firstName = data.firstName;
+    if (data.lastName !== undefined) backendData.lastName = data.lastName;
+    if (data.email !== undefined) backendData.email = data.email;
+    if (data.phone !== undefined) backendData.phone = data.phone;
+    if (data.profilePhoto !== undefined) backendData.profilePhoto = data.profilePhoto;
+    
+    return this.http.put<any>(this.apiUrl, backendData).pipe(
       map(backendProfile => this.mapBackendToFrontend(backendProfile)),
       tap(profile => this.userSubject.next(profile))
     );
+  }
+
+  changePassword(data: { currentPassword: string; newPassword: string }): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>('/api/users/change-password', data);
   }
 
   // Method to initialize profile after login

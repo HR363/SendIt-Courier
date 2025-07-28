@@ -1,7 +1,7 @@
 import { Controller, Get, Request, UseGuards, Body, Put, Param } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
-import { UpdateUserProfileDto, UserProfileResponseDto } from './dto/profile.dto';
+import { UpdateUserProfileDto, UserProfileResponseDto, ChangePasswordDto } from './dto/profile.dto';
 import { UsersService } from './users.service';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -24,6 +24,15 @@ export class UsersController {
     @Body() dto: UpdateUserProfileDto,
   ): Promise<UserProfileResponseDto> {
     return this.usersService.updateProfile(req.user.userId, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('change-password')
+  async changePassword(
+    @Request() req: ExpressRequest & { user: { userId: string } },
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    return this.usersService.changePassword(req.user.userId, dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -58,6 +58,14 @@
 .users-table tbody tr {
   border-bottom: 1px solid #f3f4f6;
 }
+
+.role-dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
 .role-dropdown {
   border: 1.5px solid #e5e7eb;
   border-radius: 2rem;
@@ -66,13 +74,47 @@
   background: #fff;
   color: #181c32;
   font-weight: 600;
-  transition: border 0.2s, color 0.2s;
+  transition: border 0.2s, color 0.2s, background-color 0.2s;
+  cursor: pointer;
+  min-width: 120px;
+}
+.role-dropdown:hover {
+  border-color: #fd7e14;
+  background-color: #fff7ed;
 }
 .role-dropdown:focus {
   border-color: #fd7e14;
   color: #fd7e14;
   outline: none;
+  box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.2);
 }
+.role-dropdown option {
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+.role-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  color: #fff;
+  transition: all 0.2s;
+}
+
+.role-indicator i.fa-crown {
+  color: #f59e0b;
+  font-size: 0.875rem;
+}
+
+.role-indicator i.fa-truck {
+  color: #3b82f6;
+  font-size: 0.875rem;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.35em 1em;
@@ -80,9 +122,27 @@
   font-size: 0.95em;
   font-weight: 600;
   color: #fff;
+  margin-right: 0.5rem;
 }
 .status-badge.active { background: #10b981; }
 .status-badge.inactive { background: #ef4444; }
+
+.toggle-status-btn {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-status-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -101,5 +161,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.7rem;
+  }
+  .role-dropdown-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
 } 
